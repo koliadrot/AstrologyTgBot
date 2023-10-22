@@ -1,34 +1,32 @@
 ﻿namespace TelegramBot.Controllers
 {
-    using Data.Core;
-    using Data.Core.Models;
-    using Microsoft.AspNetCore.Mvc;
-    using System.Diagnostics;
-    using TelegramBot.Models;
+	using Microsoft.AspNetCore.Mvc;
+	using Service.Abstract;
+	using Service.ViewModels;
+	using System.Diagnostics;
 
-    public class HomeController : Controller
-    {
-        private readonly ILogger<HomeController> _logger;
-        private readonly ApplicationDbContext _applicationDbContext;
+	public class HomeController : Controller
+	{
+		private readonly ILogger<HomeController> _logger;
+		private readonly IUserManager _userManager;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext applicationDbContext)
-        {
-            _logger = logger;
-            _applicationDbContext = applicationDbContext;
-        }
+		public HomeController(ILogger<HomeController> logger, IUserManager userManager)
+		{
+			_logger = logger;
+			_userManager = userManager;
+		}
 
-        public IActionResult Index()
-        {
-            TelegramBotParams telegramBotParam = _applicationDbContext.TelegramParams.FirstOrDefault();
-            return View(telegramBotParam);
-        }
+		public IActionResult Index()
+		{
+			return View();
+		}
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+		public IActionResult Privacy()
+		{
+			return View();
+		}
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error() => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
+		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+		public IActionResult Error() => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+	}
 }

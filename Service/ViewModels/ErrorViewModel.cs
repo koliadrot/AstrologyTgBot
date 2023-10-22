@@ -1,4 +1,4 @@
-namespace TelegramBot.Models
+namespace Service.ViewModels
 {
     public class ErrorViewModel
     {
