@@ -1,0 +1,54 @@
+@font-face {
+    font-family: 'AvantGardeGothicDemiITC';
+    src: url('AvantGardeGothicDemiITC-Obl.woff2') format('woff2'),
+        url('AvantGardeGothicDemiITC-Obl.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'AvantGardeGothicDemiITC';
+    src: url('AvantGardeGothicDemiITC-Reg.woff2') format('woff2'),
+        url('AvantGardeGothicDemiITC-Reg.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'AvantGardeGothicC';
+    src: url('AvantGardeGothicC-Bold.woff2') format('woff2'),
+        url('AvantGardeGothicC-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'AvantGardeGothicBookITC';
+    src: url('AvantGardeGothicBookITC-Reg.woff2') format('woff2'),
+        url('AvantGardeGothicBookITC-Reg.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'AvantGardeGothicBookITC';
+    src: url('AvantGardeGothicBookITC-Obl.woff2') format('woff2'),
+        url('AvantGardeGothicBookITC-Obl.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'AvantGardeGothicC';
+    src: url('AvantGardeGothicC-Demi.woff2') format('woff2'),
+        url('AvantGardeGothicC-Demi.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+

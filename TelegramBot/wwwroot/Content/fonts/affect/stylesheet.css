@@ -1,0 +1,20 @@
+@font-face {
+    font-family: 'Affect';
+    src: url('Affect.woff2') format('woff2'),
+        url('Affect.woff') format('woff'),
+        url('Affect.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Affect';
+    src: url('Affect-Bold.woff2') format('woff2'),
+        url('Affect-Bold.woff') format('woff'),
+        url('Affect-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
