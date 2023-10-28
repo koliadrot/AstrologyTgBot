@@ -16,5 +16,6 @@
         public string HelloText { get; set; }
         public string Menu { get; set; }
         public virtual ICollection<TelegramBotCommand> BotCommands { get; set; } = new List<TelegramBotCommand>();
+        public virtual ICollection<TelegramBotRegisterCondition> BotRegisterConditions { get; set; } = new List<TelegramBotRegisterCondition>();
     }
 }
