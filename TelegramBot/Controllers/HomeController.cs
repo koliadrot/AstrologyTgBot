@@ -1,32 +1,29 @@
 ﻿namespace TelegramBot.Controllers
 {
-	using Microsoft.AspNetCore.Mvc;
-	using Service.Abstract;
-	using Service.ViewModels;
-	using System.Diagnostics;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using Service.Abstract;
+    using Service.ViewModels;
+    using System.Diagnostics;
 
-	public class HomeController : Controller
-	{
-		private readonly ILogger<HomeController> _logger;
-		private readonly IUserManager _userManager;
+    [Authorize]
+    public class HomeController : Controller
+    {
+        private readonly ILogger<HomeController> _logger;
+        private readonly IUserManager _userManager;
 
-		public HomeController(ILogger<HomeController> logger, IUserManager userManager)
-		{
-			_logger = logger;
-			_userManager = userManager;
-		}
+        public HomeController(ILogger<HomeController> logger, IUserManager userManager)
+        {
+            _logger = logger;
+            _userManager = userManager;
+        }
 
-		public IActionResult Index()
-		{
-			return View();
-		}
+        public IActionResult Index()
+        {
+            return View();
+        }
 
-		public IActionResult Privacy()
-		{
-			return View();
-		}
-
-		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-		public IActionResult Error() => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-	}
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error() => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
 }

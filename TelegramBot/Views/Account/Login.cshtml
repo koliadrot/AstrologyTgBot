@@ -1,0 +1,93 @@
+﻿@using Kendo.Mvc.UI;
+
+@model LoginViewModel
+@{
+    ViewBag.Title = "Вход в систему";
+}
+<div>
+    <a class="hiddenanchor" id="signup"></a>
+    <a class="hiddenanchor" id="signin"></a>
+    <div class="login_wrapper">
+        <div class="animate form login_form">
+            <section class="login_content">
+                @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post,true, new { role = "form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <h1 style="user-select:none">Авторизация</h1>
+                    <div>
+                        @Html.TextBoxFor(m => m.Login, new { @class = "form-control", placeholder = "Логин" })
+                        @Html.ValidationMessageFor(m => m.Login, "", new { @class = "text-danger" })
+                    </div>
+                    <div id="passwordBlock">
+                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Пароль" })
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                    </div>
+                    <div>
+                        @(Html.Kendo().Button()
+                            .Name("enterButton")
+                            .HtmlAttributes(new { type = "submit" })
+                            .Content("Вход")
+                            .Events(e => e.Click("onLoginButtonClick"))
+                            )
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    <div class="separator">
+
+                        <div class="clearfix"></div>
+                        <br />
+                    </div>
+                }
+            </section>
+        </div>
+
+
+    </div>
+</div>
+<script>
+
+    function onLoginButtonClick(){
+        if ($("#passwordBlock").is(":visible")) {
+            return true;
+        }
+        else {
+            if ($("#Password").val().length > 1) {
+                $("#enterButton").show(500);
+            }
+            $("#passwordBlock").show(500);
+        }
+        return false;
+    }
+
+    $(document).ready(function () {
+        if (!String.prototype.includes) {
+            String.prototype.includes = function (search, start) {
+                'use strict';
+                if (typeof start !== 'number') {
+                    start = 0;
+                }
+
+                if (start + search.length > this.length) {
+                    return false;
+                } else {
+                    return this.indexOf(search, start) !== -1;
+                }
+            };
+        }
+        $("#Login").keypress(function () {
+            if ($("#passwordBlock").is(":visible")) {
+                $("#passwordBlock").hide();
+                $("#enterButton").hide();
+            }
+        });
+        $("#Password").bind('keyup', function () {
+            if ($("#Password").val().length > 1) {
+                $("#enterButton").show(300)
+            }
+            else {
+                $("#enterButton").hide()
+            }
+        });
+        })
+</script>
