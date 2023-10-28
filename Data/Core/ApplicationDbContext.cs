@@ -33,6 +33,7 @@
         public DbSet<TelegramBotParams> TelegramParams { get; set; }
         public DbSet<TelegramBotCommand> TelegramBotCommands { get; set; }
         public DbSet<TelegramBotRegisterCondition> TelegramBotRegisterConditions { get; set; }
+        public DbSet<TelegramBotParamMessage> TelegramBotParamMessages { get; set; }
         public DbSet<ApiAccessToken> ApiAccessTokens { get; set; }
 
     }
