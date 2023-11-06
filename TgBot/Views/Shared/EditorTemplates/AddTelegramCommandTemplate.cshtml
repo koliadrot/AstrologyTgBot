@@ -1,0 +1,210 @@
+﻿@using System.Collections
+@using Service.ViewModels.TelegramModels;
+@using Service.Enums;
+@using Service.Extensions;
+
+@model TelegramBotCommandViewModel
+
+
+@Html.HiddenFor(m => m.TelegramBotId)
+@Html.HiddenFor(m => m.BotCommandId)
+@Html.HiddenFor(m => m.CommandName)
+@Html.HiddenFor(m => m.IsPublic)
+
+<script>
+
+    function onChangeCommandTypeDropList(e) {
+        var commandType = this.value();
+        var additionalDataBlock = $("#AdditionalDataBlock");
+
+        if (commandType === infoCommandType) {
+            additionalDataBlock.show();
+        } else {
+            additionalDataBlock.hide();
+        }
+    }
+
+    function initMainButtons() {
+        setTimeout(function () {
+            var isNewCommand = $("#BotCommandId").val() == 0;
+            var addCommandWindow = $(".k-widget.k-window.k-display-inline-flex");
+            if (addCommandWindow.length > 0) {
+                var updateButton = addCommandWindow.find(".k-grid-update");
+                var cancelButton = addCommandWindow.find(".k-grid-cancel");
+                var title = addCommandWindow.find(".k-window-title");
+
+                updateButton.text(isNewCommand ? "Создать" : "Обновить");
+                title.html(isNewCommand ? "Создание новой команды" : "Редактирование команды");
+                cancelButton.text("Отмена");
+
+                $(".k-overlay").click(function () {
+                    cancelButton.click();
+                });
+            }
+            if ($("#CommandType").val() != "@TelegramBotCommandType.Custom.ToString()") {
+                $(".isLockToEdit").show();
+            }
+            else {
+                $(".isLockToEdit").hide();
+            }
+
+            if ($("#IsPublic").val() == "true" || $("#BotCommandId").val() == "0") {
+                $(".isAccessPublic").show();
+            }
+            else {
+                $(".isAccessPublic").hide();
+            }
+        }, 100);
+    }
+
+    $(document).ready(function () {
+        initMainButtons();
+    });
+</script>
+
+<div id="newCommandWindow" class="well">
+    <div class="col pl-0 pr-0">
+        <div class="col">
+            <div class="row">
+                <div class="col-md-6 col-xl-4">
+                    <div class="form-group">
+                        <label for="Name">Название:</label>
+                    </div>
+                </div>
+                <div class="col pl-2">
+                    <div class="form-group">
+                        @(Html.Kendo().TextBoxFor(m => m.Name).HtmlAttributes(new { id = "Name", @class = "form-control" }))
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="row">
+                <div class="col-md-6 col-xl-4">
+                    <div class="form-group">
+                        <label for="Description">Описание:</label>
+                    </div>
+                </div>
+                <div class="col pl-2">
+                    <div class="form-group">
+                        @(Html.Kendo().TextAreaFor(m => m.Description).HtmlAttributes(new { id = "Description", @class = "form-control", @style = "resize: vertical !important;" }))
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="row">
+                <div class="col-md-6 col-xl-4">
+                    <div class="form-group">
+                        <label for="CommandType">Тип:</label>
+                    </div>
+                </div>
+                <div class="col pl-2">
+                    <div class="form-group">
+                        @(Html.Kendo().DropDownListFor(m => m.CommandType)
+                            .BindTo(Enum.GetValues(typeof(TelegramBotCommandType))
+                            .Cast<TelegramBotCommandType>()
+                            .Select(e => new SelectListItem
+                        {
+                            Text = e.Description(),
+                            Value = e.ToString()
+                        }))
+                            .Events(events =>
+                            {
+                                events.Change("onChangeCommandTypeDropList");
+                                events.DataBound("onChangeCommandTypeDropList");
+                            })
+                            .HtmlAttributes(new { id = "CommandType", @class = "form-control" }))
+                    </div>
+                </div>
+            </div>
+
+            <div class="col isLockToEdit">
+                <div class="row">
+                    <div class="col-md-6 col-xl-4 col-6 col-sm-6 pr-0">
+                        <div class="form-group">
+                            <label>После авторизации:</label>
+                        </div>
+                    </div>
+                    <div class="col-md col-1 pl-2">
+                        <div class="form-group">
+                            @(Html.Kendo().CheckBoxFor(m => m.IsAuth).HtmlAttributes(new { id = "IsAuth", @class = "form-check-input" }))
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col isLockToEdit">
+                <div class="row">
+                    <div class="col-md-6 col-xl-4 col-6 col-sm-6 pr-0">
+                        <div class="form-group">
+                            <label>Всегда доступна:</label>
+                        </div>
+                    </div>
+                    <div class="col-md col-1 pl-2">
+                        <div class="form-group">
+                            @(Html.Kendo().CheckBoxFor(m => m.IsDefault).HtmlAttributes(new { id = "IsDefault", @class = "form-check-input" }))
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col isAccessPublic">
+                <div class="row">
+                    <div class="col-md-6 col-xl-4 col-6 col-sm-6 pr-0">
+                        <div class="form-group">
+                            <label>Активна:</label>
+                        </div>
+                    </div>
+                    <div class="col-md col-1 pl-2">
+                        <div class="form-group">
+                            @(Html.Kendo().CheckBoxFor(m => m.IsEnable).HtmlAttributes(new { id = "IsEnable", @class = "form-check-input" }))
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="AdditionalDataBlock" class="col">
+                <div class="row">
+                    <div class="col-md-6 col-xl-4">
+                        <div class="form-group">
+                            <label for="Description">Доп. информация:</label>
+                        </div>
+                    </div>
+                    <div class="col pl-2">
+                        <div class="form-group">
+                            @(Html.Kendo().TextAreaFor(m => m.AdditionalData).HtmlAttributes(new { id = "AdditionalData", @class = "form-control", @style = "resize: vertical !important;" }))
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="clear:both"></div>
+        </div>
+    </div>
+
+
+
+    <style>
+        .k-widget.k-window.k-display-inline-flex {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            max-height: calc(100% - 20px);
+            position: absolute;
+            left: 50% !important;
+            top: 50% !important;
+            transform: translate(-50%, -50%) !important;
+        }
+
+        .k-animation-container,
+        .k-animation-container *,
+        .k-animation-container ::after,
+        .k-block .k-header,
+        .k-widget,
+        .k-widget *,
+        .k-widget ::before {
+            box-sizing: border-box !important;
+        }
+
+        .k-edit-form-container {
+            width: auto !important;
+        }
+    </style>
+

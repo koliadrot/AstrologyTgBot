@@ -1,0 +1,12 @@
+﻿@using Data.Core.Models;
+@{
+    ViewData["Title"] = "Главная страница";
+}
+<h3>@ViewData["Title"]</h3>
+
+
+<form asp-controller="Account" asp-action="LogOff" method="post">
+    <button type="submit">Выход</button>
+</form>
+
+

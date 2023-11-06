@@ -1,0 +1,380 @@
+﻿@using Service.ViewModels.TelegramModels;
+@using Service.Enums;
+@using Service.Extensions;
+@using Service;
+@using System.Text.Json;
+
+@{
+    ViewBag.Title = "Настройки телеграм бота";
+}
+
+@model TelegramBotParamsViewModel
+
+@(Html.Kendo().Notification()
+    .Name("popupNotification")
+    .AppendTo("#notificationContainer")
+    .AllowHideAfter(1000)
+)
+
+@Html.HiddenFor(m => m.TelegramBotId)
+<div class="row justify-content-between">
+    <h3 class="ml-2 pl-1">Основные параметры</h3>
+    <div class="row mr-2">
+        <h3>Статус</h3>
+        <div id="statusIndicator" class="status-indicator status-indicator-started mt-3 ml-2"></div>
+    </div>
+</div>
+<div id="telegramBotEdit">
+    <div class="col-xl-10 col-md pl-0">
+        <div class="col-xl-9 col-md pl-1">
+            <div class="row">
+                <div class="col-md-6 col-xl-4">
+                    <div class="form-group">
+                        <label for="BotName">Имя:</label>
+                        <span id="questionBotName" class="fa-light fa-circle-question ml-2" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <div class="col pl-2">
+                    <div class="form-group">
+                        @(Html.Kendo().TextBoxFor(m => m.BotName).Value(Model.BotName).HtmlAttributes(new { id = "BotName", @class = "form-control" }))
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if ((bool)ViewBag.IsSuperAdmin)
+        {
+            <div class="col-xl-9 col-md pl-1">
+                <div class="row">
+                    <div class="col-md-6 col-xl-4">
+                        <div class="form-group">
+                            <label for="BotUserName">Никнейм:</label>
+                            <span id="questionBotUserName" class="fa-light fa-circle-question ml-2" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="col pl-2">
+                        <div class="form-group">
+                            @(Html.Kendo().TextBoxFor(m => m.BotUserName).Value(Model.BotUserName).HtmlAttributes(new { id = "BotUserName", @class = "form-control" }))
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-9 col-md pl-1">
+                <div class="row">
+                    <div class="col-md-6 col-xl-4">
+                        <div class="form-group">
+                            <label for="TokenAPI">Токен API:</label>
+                            <span id="questionTokenAPI" class="fa-light fa-circle-question ml-2" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="col pl-2">
+                        <div class="form-group">
+                            @(Html.Kendo().TextBoxFor(m => m.TokenApi).Value(Model.TokenApi).HtmlAttributes(new { id = "TokenAPI", @class = "form-control" }))
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-9 col-md pl-1">
+                <div class="row">
+                    <div class="col-md-6 col-xl-4">
+                        <div class="form-group">
+                            <label for="WebHookUrl">Ссылка Webhook:</label>
+                            <span id="questionWebHookUrl" class="fa-light fa-circle-question ml-2" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="col pl-2">
+                        <div class="form-group">
+                            @(Html.Kendo().TextBoxFor(m => m.WebHookUrl).Value(Model.WebHookUrl).HtmlAttributes(new { id = "WebHookUrl", @class = "form-control" }))
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="col-xl-9 col-md pl-1">
+            <div class="row">
+                <div class="col-md-6 col-xl-4">
+                    <div class="form-group">
+                        <label for="TosUrl">Условия пользования:</label>
+                        <span id="questionTosUrl" class="fa-light fa-circle-question ml-2" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <div class="col pl-2">
+                    <div class="form-group">
+                        @(Html.Kendo().TextAreaFor(m => m.TosUrl).Value(Model.TosUrl).HtmlAttributes(new { id = "TosUrl", @class = "form-control", @style = "resize: vertical !important" }))
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-9 col-md pl-1">
+            <div class="row">
+                <div class="col-md-6 col-xl-4">
+                    <div class="form-group">
+                        <label for="HelloText">Приветствие:</label>
+                        <span id="questionHelloText" class="fa-light fa-circle-question ml-2" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <div class="col pl-2">
+                    <div class="form-group">
+                        @(Html.Kendo().TextAreaFor(m => m.HelloText).Value(Model.HelloText).HtmlAttributes(new { id = "HelloText", @class = "form-control", @style = "resize: vertical !important" }))
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-9 col-md pl-1">
+            <div class="row">
+                <div class="col-md-6 col-xl-4 col-10 col-sm-6 pr-0">
+                    <div class="form-group">
+                        <label>Предлагать рассылку акций:</label>
+                        <span id="questionAcceptPromotionsBySms" class="fa-light fa-circle-question mt-1 ml-2" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <div class="col-md col-1 pl-2">
+                    <div class="form-group">
+                        @(Html.Kendo().CheckBoxFor(m => m.AcceptPromotionsBySms).HtmlAttributes(new { id = "AcceptPromotionsBySms", @class = "form-check-input" }))
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @*NOTE: Пока не реализовано условие цифровых чеков*@
+        @*<div class="col-xl-9 col-md pl-1">
+        <div class="row">
+        <div class="col-md-6 col-xl-4 col-10 col-sm-6 pr-0">
+        <div class="form-group">
+        <label>Предлагать цифровые чеки:</label>
+        <span id="questionAcceptElectronicReceipts" class="fa-light fa-circle-question mt-1 ml-2" aria-hidden="true"></span>
+        </div>
+        </div>
+        <div class="col-md col-1 pl-2">
+        <div class="form-group">
+        @(Html.Kendo().CheckBoxFor(m => m.AcceptElectronicReceipts).Value(Model.AcceptElectronicReceipts.ToString()).HtmlAttributes(new { id = "AcceptElectronicReceipts", @class = "form-check-input" }))
+        </div>
+        </div>
+        </div>
+        </div>*@
+        <div class="col-xl-9 col-md pl-1">
+            <div class="row">
+                <div class="col-md-6 col-xl-4 col-10 col-sm-6 pr-0">
+                    <div class="form-group">
+                        @(Html.Kendo().Button().Name("saveButton").Content("Сохранить").HtmlAttributes(new { @class = "k-button" }).Events(events => events.Click("onSaveButtonClick")))
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h3 class="ml-1">Управление ботом</h3>
+    @if ((bool)ViewBag.IsSuperAdmin)
+    {
+        @(Html.Kendo().Button().Name("startButton").Content("Запустить").HtmlAttributes(new { @class = "k-button" }).Events(events => events.Click("onStartBotButtonClick")))
+        @(Html.Kendo().Button().Name("stopButton").Content("Остановить").HtmlAttributes(new { @class = "k-button" }).Events(events => events.Click("onStopBotButtonClick")))
+    }
+    @(Html.Kendo().Button().Name("resetButton").Content("Перезагрузить").HtmlAttributes(new { @class = "k-button" }).Events(events => events.Click("onResetBotButtonClick")))
+    <div id="notificationContainer" class="mt-1"></div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        initHelpTooltips();
+        initStartData();
+        updateSaveButton();
+        onHandlerChangeData();
+        checkSaveData();
+        let isStarted = @Html.Raw(JsonSerializer.Serialize(ViewBag.IsStarted));
+        updateSwitchElements(isStarted);
+    });
+
+    // Иници-я подсказок
+    function initHelpTooltips() {
+        $("#questionBotName").kendoTooltip({
+            content: "Имя бота, которое генерируется у BotFather в телеграмм аккаунте.<br>Слишком часто менять имя нельзя!",
+            position: "right"
+        })
+        $("#questionBotUserName").kendoTooltip({
+            content: "Уникальный никнейм бота, которое генерируется у BotFather в телеграмм аккаунте.",
+            position: "right"
+        })
+
+        $("#questionTokenAPI").kendoTooltip({
+            content: "Токен генерируемый у BotFather в телеграмм аккаунте",
+            position: "right",
+        })
+
+        $("#questionWebHookUrl").kendoTooltip({
+            content: "Ссылка куда будет слать сообщения телеграм сервер",
+            position: "right"
+        })
+        $("#questionTosUrl").kendoTooltip({
+            content: "Ссылка или текст с условиями использования программы<br>и обработки персональных данных",
+            position: "right"
+        })
+        $("#questionAcceptPromotionsBySms").kendoTooltip({
+            content: "При регистрации клиента запрашивать согласие на<br>рассылку персональных скидок, акций и распродаж",
+            position: "right"
+        })
+        $("#questionAcceptElectronicReceipts").kendoTooltip({
+            content: "Предлагать ли при регистрации клиента согласится<br>на рассылку электронных чеков на почту",
+            position: "right"
+        })
+        $("#questionHelloText").kendoTooltip({
+            content: "Текст приветствия телеграмм бота при первом начале разговора",
+            position: "right"
+        })
+    }
+
+    // Обработчик события при измении параметров
+    function onHandlerChangeData() {
+        $("#BotName,#BotUserName, #TokenAPI, #WebHookUrl, #TosUrl, #HelloText, #AcceptPromotionsBySms, #AcceptElectronicReceipts").on("change", function () {
+            updateSaveButton();
+        });
+    }
+
+    // Обновляет состояние кнопки сохранения
+    // в зависимости от наличия несохраненных данных
+    function updateSaveButton() {
+        var saveButton = $("#saveButton");
+
+        if (hasUnsaveData()) {
+            saveButton.removeAttr("disabled");
+            saveButton.addClass("btn-primary");
+        }
+        else {
+            saveButton.attr("disabled", "disabled");
+            saveButton.removeClass("btn-primary");
+        }
+    }
+
+    // Обновление состояния всех элементов вкл/выкл
+    function updateSwitchElements(isStarted) {
+        var startButton = $("#startButton");
+        var stopButton = $("#stopButton");
+        var resetButton = $("#resetButton");
+        updateStatusIndicator(isStarted);
+        if (isStarted) {
+            resetButton.removeClass("hidden");
+            startButton.addClass("hidden");
+            stopButton.removeClass("hidden");
+        }
+        else {
+            startButton.removeClass("hidden");
+            resetButton.addClass("hidden");
+            stopButton.addClass("hidden");
+        }
+
+        if (startSaveData.WebHookUrl !== undefined && startSaveData.TokenApi !== undefined && (!startSaveData.WebHookUrl || !startSaveData.TokenApi)) {
+            startButton.addClass("hidden");
+            resetButton.addClass("hidden");
+            stopButton.addClass("hidden");
+            updateStatusIndicator(false);
+        }
+    }
+
+    // Обновление индикатора статуса
+    function updateStatusIndicator(isStarted) {
+        var statusIndicator = $("#statusIndicator");
+
+        if (isStarted) {
+            statusIndicator.removeClass("status-indicator-stopped");
+            statusIndicator.addClass("status-indicator-started");
+        } else {
+            statusIndicator.removeClass("status-indicator-started");
+            statusIndicator.addClass("status-indicator-stopped");
+        }
+    }
+
+    // Кнопка сохранений настроек телеграмм бота
+    async function onSaveButtonClick() {
+        showLoader(true);
+        if (!$("#WebHookUrl").val()) {
+            var postStop = "@Url.Action("StopTelegramBot", "HomeApi")";
+            await switchOnOffTelegramBot(postStop, '@Model.TelegramBotId');
+        }
+        const result = await saveTelegramBotParams();
+        var state = startSaveData.WebHookUrl ? result.success : true;
+        var message = state ? "Бот обновлен" : "Возникли неполадки";
+        var typeMessage = state ? "success" : "error";
+        showNotification(message, typeMessage);
+        updateSwitchElements(result.success && result.result.isStarted);
+        updateSaveButton();
+        showLoader(false);
+    }
+
+    // Кнопка запуска телеграм бота
+    async function onStartBotButtonClick() {
+        showLoader(true);
+        var post = "@Url.Action("StartTelegramBot", "HomeApi")";
+        const result = await switchOnOffTelegramBot(post, '@Model.TelegramBotId');
+        var state = result.success && result.result.isStarted;
+        var message = state ? "Бот запущен успешно" : "Возникли неполадки";
+        var typeMessage = state ? "success" : "error";
+        showNotification(message, typeMessage);
+        updateSwitchElements(state);
+        showLoader(false);
+    }
+
+    // Кнопка остановки телеграм бота
+    async function onStopBotButtonClick() {
+        showLoader(true);
+        var post = "@Url.Action("StopTelegramBot", "HomeApi")";
+        const result = await switchOnOffTelegramBot(post, '@Model.TelegramBotId');
+        var state = result.success && !result.result.isStarted;
+        var message = state ? "Бот остановлен успешно" : "Возникли неполадки";
+        var typeMessage = state ? "success" : "error";
+        showNotification(message, typeMessage);
+        updateSwitchElements(result.success && result.result.isStarted);
+        showLoader(false);
+    }
+
+    // Кнопка перезагрузки телеграм бота
+    async function onResetBotButtonClick() {
+        showLoader(true);
+        var post = "@Url.Action("ResetTelegramBot", "HomeApi")";
+        const result = await switchOnOffTelegramBot(post, '@Model.TelegramBotId');
+        var state = result.success && result.result.isStarted;
+        var message = state ? "Бот перезагружен успешно" : "Возникли неполадки";
+        var typeMessage = state ? "success" : "error";
+        showNotification(message, typeMessage);
+        updateSwitchElements(state);
+        showLoader(false);
+    }
+
+
+
+    // Обработчик ошибок
+    function onHandlerError(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+</script>
+
+<style>
+    .status-indicator {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        margin-right: 10px;
+        transition: background-color 0.3s;
+    }
+
+    .status-indicator-started {
+        background-color: green;
+    }
+
+    .status-indicator-stopped {
+        background-color: red;
+    }
+</style>
+
+<script src="~/Scripts/TelegramBotParamsSupport.js?@DateTime.Now.Ticks.ToString()" type="text/javascript"></script>

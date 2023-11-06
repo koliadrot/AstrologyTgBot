@@ -1,0 +1,254 @@
+﻿@using Service.ViewModels.TelegramModels;
+@using Service.Extensions;
+@using System.Text.Json;
+
+@model TelegramBotParamsViewModel
+
+@{
+    ViewBag.Title = "TelegramBotCostructorMenu";
+}
+
+@(Html.Kendo().Notification()
+    .Name("popupNotification")
+    .AppendTo("#notificationContainer")
+    .AllowHideAfter(1000)
+)
+@Html.HiddenFor(m => m.TelegramBotId)
+
+<h2>Конструктор меню Telegram бота</h2>
+<div id="telegramBotEdit">
+    <div class="tabs-container">
+        <ul class="nav nav-tabs bar_tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#_pill1" class="nav-link active">До регистрации</a></li>
+            <li class="nav-item"><a data-toggle="tab" href="#_pill2" class="nav-link">После регистрации</a></li>
+        </ul>
+    </div>
+    <div class="tab-content">
+        <div id="_pill1" class="tab-pane fadeIn active">
+            <div class="well">
+                <form id="menuForm">
+                    <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 addRootCommand" onclick="addRootCommand('startMenuTree')" title="Добавить команду"><span class="fa-light fa-plus"></span></button>
+                    <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 showAllCommands" onclick="switchAllCommands('startMenuTree',true)" title="Развернуть все меню">Показать все</button>
+                    <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 hideAllCommands" onclick="switchAllCommands('startMenuTree',false)" title="Свернуть все меню">Скрыть все</button>
+                    <div id="startMenuTree" class="col pl-0 mt-1">
+                    </div>
+                </form>
+                <div style="clear:both"></div>
+            </div>
+        </div>
+        <div id="_pill2" class="tab-pane fadeIn">
+            <div class="well">
+                <form id="menuForm">
+                    <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 addRootCommand" onclick="addRootCommand('authMenuTree')" title="Добавить команду"><span class="fa-light fa-plus"></span></button>
+                    <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 showAllCommands" onclick="switchAllCommands('authMenuTree',true)" title="Развернуть все меню">Показать все</button>
+                    <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 hideAllCommands" onclick="switchAllCommands('authMenuTree',false)" title="Свернуть все меню">Скрыть все</button>
+                    <div id="authMenuTree" class="col pl-0 mt-1">
+                    </div>
+                </form>
+                <div style="clear:both"></div>
+            </div>
+        </div>
+        <div class="form-group">
+            @(Html.Kendo().Button().Name("saveButton").Content("Сохранить").HtmlAttributes(new { @class = "k-button" }).Events(events => events.Click("onSaveButtonClick")))
+            @(Html.Kendo().Button().Name("cancelButton").Content("Сброс").HtmlAttributes(new { @class = "k-button" }).Events(events => events.Click("onCancelButtonClick")))
+        </div>
+        <div id="notificationContainer" class="mt-1"></div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        initTreeMenu();
+        initStartMenuData();
+        checkSaveMenuData();
+        updateMainButtons();
+        switchAllCommands('authMenuTree', false);
+        switchAllCommands('startMenuTree', false);
+        $(".command-name").on("input", function () {
+            updateMainButtons();
+        });
+    });
+
+    // Инициализация построения меню
+    function initTreeMenu() {
+        var menuData = JSON.parse(@Html.Raw(JsonSerializer.Serialize(Model.Menu)));
+        if (menuData) {
+            buildAuthMenu(menuData);
+            buildStartMenu(menuData);
+        }
+    }
+
+    // Обработка кнопки сохранения меню
+    async function onSaveButtonClick() {
+        showLoader(true);
+        const result = await saveTelegramBotMenu();
+        var message = result.success ? "Меню обновлено" : "Возникли неполадки";
+        var typeMessage = result.success ? "success" : "error";
+        showNotification(message, typeMessage);
+        showLoader(false);
+        updateMainButtons();
+    }
+
+    // Обработка кнопки сброса данных после последнего сохранения
+    function onCancelButtonClick() {
+        initTreeMenu();
+        updateMainButtons();
+    }
+
+    // Функция для добавления подкоманды к команде верхнего уровня
+    function addSubCommand(guid, level, contanier) {
+        var newGuid = generateGuid();
+        var subcommandHtml = `
+                <div class="command-node col pl-0 margin-node" data-guid="${newGuid}" data-level="${level + 1}">
+                    <div class="row" data-id="${newGuid}">
+                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 switchPanelButton mr-2" onclick="switchPanelCommand('${newGuid}', ${level + 1})" title="Сернуть"><span class="fa-light fa-arrow-down"></span></button>
+                        <input type="text" class="command-name" placeholder="Название пункта">
+                        <div class="col pl-1 pr-0 margin-dropdown" level="${level + 1}" style="max-width: 190px;">
+                            <input class="command-dropdown" />
+                        </div>
+                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 add-subcommand" onclick="addSubCommand('${newGuid}', ${level + 1}, '${contanier}')" title="Добавить подкомманду"><span class="fa-light fa-plus"></span></button>
+                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 remove-subcommand" onclick="removeCommand('${newGuid}', ${level + 1},false)" title="Удалить подкомманду"><span class="fa-light fa-minus"></span></button>
+                    </div>
+                </div>`;
+        var currentCommandNode = $(`[data-id="${guid}"]`).closest(".command-node");
+        currentCommandNode.append(subcommandHtml);
+
+        var listCommands = @Html.Raw(JsonSerializer.Serialize(Model.BotCommands));
+        var authCommands = listCommands.filter(function (command) {
+            return command.IsAuth || command.IsDefault;
+        });
+
+        var nonAuthCommands = listCommands.filter(function (command) {
+            return !command.IsAuth || command.IsDefault;
+        });
+        var commandsToDisplay = IsAuthMenu(contanier) ? authCommands : nonAuthCommands;
+
+        var subcommandDropdown = currentCommandNode.find(".command-dropdown:last");
+        subcommandDropdown.kendoDropDownList({
+            dataTextField: "Name",
+            dataValueField: "CommandName",
+            dataSource: commandsToDisplay,
+            change: function () {
+                var selectedValue = this.value();
+                var addSubcommandButton = $(`[data-id="${newGuid}"]`).find(".add-subcommand");
+                var switchPanelButton = $(`[data-id="${newGuid}"]`).find(".switchPanelButton");
+
+                var commandNameInput = $(`[data-id="${newGuid}"]`).find(".command-name");
+                if (selectedValue === "/transition") {
+                    commandNameInput.val("");
+                    addSubcommandButton.show();
+                    switchPanelButton.show();
+                    switchPanelButton.find("span.fa-light").removeClass("fa-arrow-right").addClass("fa-arrow-down");
+                    $(`[data-id="${newGuid}"]`).css("margin-left", "0px");
+                } else {
+                    commandNameInput.val(this.text());
+                    removeCommand(newGuid, level + 1, true);
+                    addSubcommandButton.hide();
+                    switchPanelButton.hide();
+                    $(`[data-id="${newGuid}"]`).css("margin-left", "56px");
+                }
+                updateMainButtons();
+            },
+        });
+
+        subcommandDropdown.data("kendoDropDownList").trigger("change");
+        var iconSpan = $(`[data-id="${guid}"]`).find(".switchPanelButton").find("span.fa-light");
+        if (iconSpan.hasClass("fa-arrow-right")) {
+            switchPanelCommand(guid, level)
+        }
+        updateMainButtons();
+        updateStylesBasedOnMaxLevel(contanier);
+        return newGuid;
+    }
+
+    // Функция для добавления новой команды верхнего уровня
+    function addRootCommand(contanier) {
+        var newGuid = generateGuid();
+        var level = 0;
+        var newRootCommandHtml = `
+                <div class="command-node col pl-0" data-guid="${newGuid}" data-level="${level}">
+                    <div class="row" data-id="${newGuid}">
+                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 switchPanelButton mr-2" onclick="switchPanelCommand('${newGuid}', ${level})" title="Сернуть"><span class="fa-light fa-arrow-down"></span></button>
+                        <input type="text" class="command-name" placeholder="Название пункта">
+                        <div class="col pl-1 pr-0 margin-dropdown" level="${level}" style="max-width: 190px;">
+                            <input class="command-dropdown" />
+                        </div>
+                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 add-subcommand" onclick="addSubCommand('${newGuid}', ${level}, '${contanier}')" title="Добавить подкомманду"><span class="fa-light fa-plus"></span></button>
+                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 remove-subcommand" onclick="removeCommand('${newGuid}', ${level},false)" title="Удалить подкомманду"><span class="fa-light fa-minus"></span></button>
+                    </div>
+                </div>`;
+        $(`#${contanier}`).append(newRootCommandHtml);
+
+        var listCommands = @Html.Raw(JsonSerializer.Serialize(Model.BotCommands));
+        var authCommands = listCommands.filter(function (command) {
+            return command.IsAuth || command.IsDefault;
+        });
+
+        var nonAuthCommands = listCommands.filter(function (command) {
+            return !command.IsAuth || command.IsDefault;
+        });
+        var commandsToDisplay = IsAuthMenu(contanier) ? authCommands : nonAuthCommands;
+
+        var commandDropdown = $(`#${contanier} .command-dropdown:last`);
+        commandDropdown.kendoDropDownList({
+            dataTextField: "Name",
+            dataValueField: "CommandName",
+            dataSource: commandsToDisplay,
+            change: function () {
+                var selectedValue = this.value();
+                var addSubcommandButton = $(`[data-id="${newGuid}"]`).find(".add-subcommand");
+                var switchPanelButton = $(`[data-id="${newGuid}"]`).find(".switchPanelButton");
+
+                var commandNameInput = $(`[data-id="${newGuid}"]`).find(".command-name");
+                if (selectedValue === "/transition") {
+                    commandNameInput.val("");
+                    addSubcommandButton.show();
+                    switchPanelButton.show();
+                    switchPanelButton.find("span.fa-light").removeClass("fa-arrow-right").addClass("fa-arrow-down");
+                    $(`[data-id="${newGuid}"]`).css("margin-left", "0px");
+                }
+                else {
+                    commandNameInput.val(this.text());
+                    removeCommand(newGuid, level, true);
+                    addSubcommandButton.hide();
+                    switchPanelButton.hide();
+                    $(`[data-id="${newGuid}"]`).css("margin-left", "56px");
+                }
+                updateMainButtons();
+            },
+        });
+
+        commandDropdown.data("kendoDropDownList").trigger("change");
+        updateMainButtons();
+        updateStylesBasedOnMaxLevel(contanier);
+        return newGuid;
+    }
+</script>
+<style>
+    .readonly-field {
+        color: #999;
+        background-color: #f5f5f5;
+    }
+
+    .tabs-container {
+        display: flex;
+        flex-wrap: wrap;
+        overflow-x: auto;
+    }
+
+    .nav-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 10px;
+        padding: 0;
+        list-style: none;
+        margin: 0;
+    }
+
+        .nav-tabs .nav-item {
+            white-space: nowrap;
+        }
+</style>
+
+<script src="~/Scripts/TelegramBotParamsSupport.js?@DateTime.Now.Ticks.ToString()" type="text/javascript"></script>
+<script src="~/Scripts/TelegramBotMenu.js?@DateTime.Now.Ticks.ToString()" type="text/javascript"></script>

@@ -1,0 +1,62 @@
+﻿﻿@using System.Collections;
+@using Service.ViewModels;
+@model UserViewModel
+
+<style>
+    .k-edit-form-container {
+        width: 100% !important;
+    }
+</style>
+
+<div class="mb-2">
+    <label for="Login" class="form-label">Логин</label>
+    <div class="mb-2">
+        @Html.Kendo().TextBoxFor(m=>m.Login)
+    </div>
+</div>
+
+<div class="mb-2">
+    <label for="Name" class="form-label">Имя пользователя</label>
+    <div class="mb-2">
+        @Html.Kendo().TextBoxFor(m=>m.Name)
+    </div>
+</div>
+
+<div class="mb-2">
+    <label for="Email" class="form-label">Email</label>
+    <div class="mb-2">
+        @Html.Kendo().TextBoxFor(m=>m.Email)
+    </div>
+</div>
+
+<div class="mb-2">
+    <label for="PhoneNumber" class="form-label">Телефон</label>
+    <div class="mb-2">
+        @Html.Kendo().TextBoxFor(m=>m.PhoneNumber)
+    </div>
+</div>
+
+<div class="mb-2">
+    <label for="IsAdmin" class="form-label">Админ</label>
+    @(Html.Kendo().Switch()
+        .Name("IsAdmin")
+        .Messages(c => c.Checked("Да").Unchecked("Нет"))
+        )
+</div>
+
+<div class="mb-2">
+    <label for="UserGroup" class="form-label">Группа</label>
+    <div class="mb-3">
+        @(
+             Html.Kendo().DropDownListFor(m=>m.UserGroupId)
+            .DataSource(ds =>
+            {
+                ds.Ajax();
+                ds.Read(read => read.Action("GetUserGroups", "DictionariesApi"));
+            })
+            .DataTextField("UserGroupName")
+            .DataValueField("UserGroupId")
+
+      )
+    </div>
+</div>

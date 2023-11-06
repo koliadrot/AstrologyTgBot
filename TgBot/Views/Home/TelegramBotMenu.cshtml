@@ -1,0 +1,147 @@
+﻿@using Service.ViewModels.TelegramModels;
+@using Service.Enums;
+@using Service.Extensions;
+@using Service;
+@{
+    ViewBag.Title = "Меню команд телеграмм бота";
+}
+
+@model TelegramBotParamsViewModel
+
+@Html.HiddenFor(m => m.TelegramBotId)
+
+<div class="row justify-content-between">
+    <h3 class="ml-2 pl-1">Меню команд</h3>
+</div>
+@(Html.Kendo().Grid<TelegramBotCommandViewModel>()
+              .Name("telegramBotCommands")
+              .Editable(editable => editable.Mode(GridEditMode.PopUp)
+              .Window(w =>
+              {
+                  w.Name("AddTelegramCommandWindow");
+                  w.Resizable();
+                  w.Modal(true);
+                  w.Visible(true);
+                  w.Iframe(true);
+                  w.Draggable(true);
+                  w.AutoFocus(true);
+                  w.Actions(actions =>
+                  {
+                      actions.Custom("k-button-icon k-icon k-i-question");
+                      actions.Close();
+                  });
+                  w.Events(events =>
+                  {
+                      events.Open("onCommandWindowOpened");
+                  });
+              }).TemplateName("AddTelegramCommandTemplate"))
+              .Columns(columns =>
+              {
+                  columns.Bound(e => e.Name).Title("Название").Width(150);
+                  columns.Bound(e => e.Description).Title("Описание").Width(200);
+                  columns.Bound(e => e.CommandType).Title("Тип").Width(150).ClientTemplate("#= onCommandTypeDescription(CommandType) #");
+                  columns.Bound(e => e.IsAuth).Title("После авторизации").Width(160).ClientTemplate("# if(IsAuth){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
+                  columns.Bound(e => e.IsDefault).Title("Всегда доступна").Width(140).ClientTemplate("# if(IsDefault){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
+                  columns.Bound(e => e.IsEnable).Title("Активна").Width(100).ClientTemplate("# if(IsEnable){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
+                  columns.Command(command =>
+                  {
+                      command.Edit().Text(" ");
+                      command.Custom(" ").IconClass("k-icon k-i-close k-button-icon").Visible("onCheckDeleteVisibility").HtmlAttributes(new { @class = "k-grid-delete k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base" });
+                  }).Width(100);
+              })
+                .ToolBar(toolbar => toolbar.Create().Text(" ").HtmlAttributes(new { Title = "Добавить" }))
+                .Pageable(pageable => pageable.ButtonCount(5).PageSizes(new int[] { 5, 10, 20, 50, 100 }).Info(true))
+                .Filterable()
+                .Sortable()
+                .Scrollable(scrollable => scrollable.Height("Auto"))
+                .Reorderable(reorderable => reorderable.Columns(true))
+                .Resizable(resizable => resizable.Columns(true))
+              .DataSource(ds => ds
+                .Ajax()
+                .Read(read => read.Action("GetTelegramBotCommands", "HomeApi"))
+                .Create(create => create.Action("CreateTelegramBotCommand", "HomeApi").Data("getTelegramBotId").Type(HttpVerbs.Post))
+                .Update(update => update.Action("UpdateTelegramBotCommand", "HomeApi").Type(HttpVerbs.Post))
+                .Destroy(destroy => destroy.Action("DeleteTelegramBotCommand", "HomeApi").Type(HttpVerbs.Post))
+                .Model(model =>
+                {
+                    model.Id(x => x.BotCommandId);
+                })
+                .Events(events => events.Error("onHandlerError"))
+                .ServerOperation(true)
+                .PageSize(10)
+              )
+              )
+
+
+<script>
+    var customCommandType = "@TelegramBotCommandType.Custom.ToString()";
+    var infoCommandType = "@TelegramBotCommandType.Info.ToString()";
+    var customCommandDescription = "@TelegramBotCommandType.Custom.Description()";
+    var infoCommandDescription = "@TelegramBotCommandType.Info.Description()";
+
+    // Получает Id телеграм бота
+    function getTelegramBotId() {
+        return { telegramBotId: @Model.TelegramBotId };
+    }
+
+    // Обработчик открытия окна редактирования команды бота
+    function onCommandWindowOpened(e) {
+        getHelpInformationFromBody(e.sender, "Settings", "AddTelegramCommandTemplate");
+        onFilterCustomCommand(e);
+    }
+
+    // Обработчик фильтра команды с типом Custom
+    function onFilterCustomCommand(e) {
+        var window = e.sender;
+        var botCommandTypeField = window.element.find('#CommandType');
+        var botAdditionalDataField = window.element.find('#AdditionalData');
+        var botCommandTypeValue = botCommandTypeField.val();
+        var dropdownList = window.element.find("#CommandType").data("kendoDropDownList");
+        var customType = customCommandType;
+
+        if (botCommandTypeValue === customType) {
+            dropdownList.enable(false);
+            botAdditionalDataField.prop('readonly', true);
+        }
+        else {
+            var dataSource = dropdownList.dataSource.data();
+            dataSource = dataSource.filter(function (item) {
+                return item.Value !== customType;
+            });
+            dropdownList.setDataSource(dataSource);
+            dropdownList.value(botCommandTypeValue);
+            dropdownList.enable(true);
+            botAdditionalDataField.prop('readonly', false);
+        }
+    }
+
+    // Обработчик видимости кнопки удаления команды телеграмм бота
+    function onCheckDeleteVisibility(dataItem) {
+        return dataItem.CommandType !== customCommandType;
+    }
+
+    // Обработчик смены описания у типов комманд
+    function onCommandTypeDescription(commandType) {
+        switch (commandType) {
+            case customCommandType: return customCommandDescription;
+            case infoCommandType: return infoCommandDescription;
+            default: return "Не определен";
+        }
+    }
+
+    // Обработчик ошибок
+    function onHandlerError(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+</script>
+

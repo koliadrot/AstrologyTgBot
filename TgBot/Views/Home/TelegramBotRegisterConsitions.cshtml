@@ -1,0 +1,114 @@
+﻿@using Service.ViewModels.TelegramModels;
+@using Service.Enums;
+@using Service.Extensions;
+@using Service;
+@{
+    ViewBag.Title = "Поля профиля при регистрации";
+}
+
+@model TelegramBotParamsViewModel
+
+@Html.HiddenFor(m => m.TelegramBotId)
+
+<div class="row justify-content-between">
+    <h3 class="ml-2 pl-1">Поля профиля при регистрации</h3>
+</div>
+@(Html.Kendo().Grid<TelegramBotRegisterConditionViewModel>()
+              .Name("telegramBotRegisterConditions")
+              .Editable(editable => editable.Mode(GridEditMode.InCell | GridEditMode.InLine))
+              .Events(events => events.Edit("onGridEdit"))
+              .Columns(columns =>
+              {
+                  columns.Bound(e => e.Name).Title("Название").Width(150);
+                  columns.Bound(e => e.Order).Hidden();
+                  columns.Bound(e => e.IsCanPass).Hidden();
+                  columns.Bound(e => e.IsNecessarily).Hidden();
+                  columns.Bound(e => e.IsEnable).Title("Обязательно").Width(100).ClientTemplate("# if(IsEnable){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
+              })
+                .ToolBar(toolbar =>
+                {
+                    toolbar.Save().SaveText("Сохранить").CancelText("Отмена");
+                })
+                .Pageable(pageable => pageable.ButtonCount(5).PageSizes(new int[] { 5, 10, 20, 50, 100 }).Info(true))
+                .Filterable()
+                .Sortable()
+                .Scrollable(scrollable => scrollable.Height("Auto"))
+                .Reorderable(reorderable => reorderable.Columns(true))
+                .Resizable(resizable => resizable.Columns(true))
+              .DataSource(ds => ds
+                .Ajax()
+                .Read(read => read.Action("GetTelegramBotRegisterConditions", "HomeApi"))
+                .Update(update => update.Action("UpdateTelegramBotRegisterCondition", "HomeApi").Type(HttpVerbs.Post))
+                .Model(model =>
+                {
+                    model.Id(x => x.RegisterConditionId);
+                })
+                .Events(events => events.Error("onHandlerError").Sync("onHandlerSave"))
+                .ServerOperation(true)
+                .PageSize(10)
+              )
+              )
+
+
+<script>
+    $(document).ready(function () {
+        showOnlyOptionalConditions();
+    });
+
+    // Показывает только опциональные условия
+    function showOnlyOptionalConditions() {
+        var grid = $("#telegramBotRegisterConditions").data("kendoGrid");
+        grid.dataSource.filter({ field: "IsNecessarily", operator: "eq", value: false });
+    }
+
+    // Получает Id телеграм бота
+    function getTelegramBotId() {
+        return { telegramBotId: @Model.TelegramBotId };
+    }
+
+    // Обработчик события при редактировании условия
+    function onGridEdit(e) {
+        var model = e.model;
+
+        if (model.IsNecessarily) {
+            e.container.find("input, select, textarea").attr("disabled", "disabled");
+        }
+        var orderValue = parseInt(model.Order);
+
+        if (!isNaN(orderValue)) {
+            if (orderValue < 0) {
+                model.set("Order", 0);
+            } else if (orderValue > 999) {
+                model.set("Order", 999);
+            }
+        }
+    }
+
+    // Обработчик события при сохранении условия
+    function onHandlerSave() {
+        var grid = $("#telegramBotRegisterConditions").data("kendoGrid");
+        grid.dataSource.read();
+    }
+
+    // Обработчик ошибок
+    function onHandlerError(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+</script>
+
+<style>
+    .readonly-column {
+        pointer-events: none;
+        cursor: default;
+    }
+</style>

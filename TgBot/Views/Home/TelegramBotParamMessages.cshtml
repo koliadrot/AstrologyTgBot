@@ -1,0 +1,181 @@
+﻿@using Service.ViewModels.TelegramModels;
+
+@{
+    ViewBag.Title = "Телеграмм бот - Параметры соообщений";
+}
+
+@model TelegramBotParamsViewModel
+
+<div id="alertSettings"></div>
+
+<h3>Параметры сообщений Telegram бота</h3>
+
+<div id="telegramBotMessageEdit">
+    <div class="tabs-container">
+        <ul class="nav nav-tabs bar_tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#_pill1" class="nav-link active">Сообщения</a></li>
+            <li class="nav-item"><a data-toggle="tab" href="#_pill2" class="nav-link">Кнопки</a></li>
+        </ul>
+    </div>
+    <div class="tab-content">
+        <div id="_pill1" class="tab-pane fadeIn active">
+            <div class="well">
+                @(Html.Kendo().Grid<TelegramBotParamMessageViewModel>().Name("telegramBotMessages")
+                    .Columns(c =>
+                    {
+
+                        c.Bound(o => o.MessageDescription).Title("Название").Width(250);
+                        c.Bound(o => o.MessageValue).Title("Значение").Encoded(false).Width(400);
+                        c.Command(command =>
+                        {
+                            command.Edit().Text(" ").HtmlAttributes(new { @title = "Редактировать" });
+                            command.Custom(" ").IconClass("k-icon k-i-reset k-button-icon").Visible("onCheckDeleteVisibility").HtmlAttributes(new { @class = "k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base", @title = "Сброс сообщения по умолчанию", @onclick = "onResetMessageButton(this)" });
+                        }).Width(50);
+                    })
+                    .Events(events =>
+                    {
+                        events.Edit("onGridEdit");
+                        events.Save("onGridMessageChange");
+                    })
+                    .Editable(editable => editable.Mode(GridEditMode.InLine))
+                    .DataSource(d => d
+                    .Ajax()
+                    .Sort(sort => sort.Add("MessageId").Ascending())
+                    .Read(read => read.Action("GetTelegramBotParamMessages", "HomeApi"))
+                    .Update(update => update.Action("UpdateTelegramBotMessage", "HomeApi").Type(HttpVerbs.Post))
+                    .Model(model =>
+                    {
+                        model.Id(x => x.MessageId);
+                        model.Field(x => x.MessageDescription).Editable(false);
+                    })
+                    .ServerOperation(false)
+                    .PageSize(10)
+                    )
+                    .Pageable()
+
+                    )
+                <div style="clear:both"></div>
+            </div>
+        </div>
+        <div id="_pill2" class="tab-pane fadeIn">
+            <div class="well">
+                @(Html.Kendo().Grid<TelegramBotParamMessageViewModel>().Name("telegramBotButtons")
+                    .Columns(c =>
+                    {
+
+                        c.Bound(o => o.MessageDescription).Title("Название").Width(250);
+                        c.Bound(o => o.MessageValue).Title("Значение").Width(400);
+                        c.Command(command =>
+                        {
+                            command.Edit().Text(" ").HtmlAttributes(new { @title = "Редактировать" });
+                            command.Custom(" ").IconClass("k-icon k-i-reset k-button-icon").Visible("onCheckDeleteVisibility").HtmlAttributes(new { @class = "k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base", @title = "Сброс кнопки по умолчанию", @onclick = "onResetButtonButton(this)" });
+                        }).Width(50);
+                    })
+                    .Events(events =>
+                    {
+                        events.Edit("onGridEdit");
+                        events.Save("onGridButtonChange");
+                    })
+                    .Editable(editable => editable.Mode(GridEditMode.InLine))
+                    .DataSource(d => d
+                    .Ajax()
+                    .Sort(sort => sort.Add("MessageId").Ascending())
+                    .Read(read => read.Action("GetTelegramBotParamButtons", "HomeApi"))
+                    .Update(update => update.Action("UpdateTelegramBotMessage", "HomeApi").Type(HttpVerbs.Post))
+                    .Model(model =>
+                    {
+                        model.Id(x => x.MessageId);
+                        model.Field(x => x.MessageDescription).Editable(false);
+                    })
+                    .ServerOperation(false)
+                    .PageSize(10)
+                    )
+                    .Pageable()
+
+                    )
+                <div style="clear:both"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function onGridEdit(e) {
+        e.container.find("#MessageValue").hide();
+        e.container.find("#MessageValue").after("<textarea id='MessageValueArea'/>");
+        e.container.find("#MessageValueArea").val(e.model.MessageValue);
+    }
+
+    function onGridMessageChange(e) {
+        var grid = $("#telegramBotMessages").data("kendoGrid");
+        var dataItem = grid.dataItem($(e.container).closest("tr"));
+
+        if (dataItem) {
+            dataItem.set("MessageValue", e.container.find("#MessageValueArea").val());
+            grid.saveChanges();
+        }
+    }
+
+
+    function onResetMessageButton(e) {
+        var grid = $("#telegramBotMessages").data("kendoGrid");
+        var dataItem = grid.dataItem($(e).closest("tr"));
+        if (dataItem) {
+            dataItem.set("MessageValue", dataItem.MessageValueDefault);
+            grid.saveChanges();
+        }
+    }
+
+
+
+    function onGridButtonChange(e) {
+        var grid = $("#telegramBotButtons").data("kendoGrid");
+        var dataItem = grid.dataItem($(e.container).closest("tr"));
+
+        if (dataItem) {
+            dataItem.set("MessageValue", e.container.find("#MessageValueArea").val());
+            grid.saveChanges();
+        }
+    }
+
+
+    function onResetButtonButton(e) {
+        var grid = $("#telegramBotButtons").data("kendoGrid");
+        var dataItem = grid.dataItem($(e).closest("tr"));
+        if (dataItem) {
+            dataItem.set("MessageValue", dataItem.MessageValueDefault);
+            grid.saveChanges();
+        }
+    }
+    function onCheckDeleteVisibility(dataItem) {
+        return dataItem.MessageValue !== dataItem.MessageValueDefault;
+    }
+</script>
+
+
+
+
+<style>
+    textarea {
+        width: 100%;
+    }
+
+    .tabs-container {
+        display: flex;
+        flex-wrap: wrap;
+        overflow-x: auto;
+    }
+
+    .nav-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 10px;
+        padding: 0;
+        list-style: none;
+        margin: 0;
+    }
+
+        .nav-tabs .nav-item {
+            white-space: nowrap;
+        }
+</style>
