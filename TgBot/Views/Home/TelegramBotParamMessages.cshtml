@@ -150,6 +150,35 @@
     function onCheckDeleteVisibility(dataItem) {
         return dataItem.MessageValue !== dataItem.MessageValueDefault;
     }
+
+    // При загрузке страницы проверяем текущий хештег и показываем соответствующую вкладку
+    $(document).ready(function () {
+        var hash = window.location.hash;
+        if (hash === '#_pill1') {
+            showTab('_pill1');
+        } else if (hash === '#_pill2') {
+            showTab('_pill2');
+        }
+    });
+
+    // Функция для отображения вкладки по идентификатору
+    function showTab(tabId) {
+        $('.tab-pane').removeClass('active');
+        $('#' + tabId).addClass('active');
+
+        $('.nav-link').removeClass('active');
+        $('[href="#' + tabId + '"]').addClass('active');
+    }
+
+    // Отслеживаем изменения хештега и показываем соответствующую вкладку
+    $(window).on('hashchange', function () {
+        var hash = window.location.hash;
+        if (hash === '#_pill1') {
+            showTab('_pill1');
+        } else if (hash === '#_pill2') {
+            showTab('_pill2');
+        }
+    });
 </script>
 
 

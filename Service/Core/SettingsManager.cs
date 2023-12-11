@@ -1,7 +1,6 @@
 ﻿using Data.Core;
 using Data.Core.Models;
 using Service.Abstract;
-using Service.Core.TelegramBot;
 using Service.Enums;
 using Service.Extensions;
 using Service.ViewModels.TelegramModels;
@@ -295,27 +294,6 @@ namespace Service.Core
             {
                 _bonusDbContext.TelegramBotCommands.Remove(command);
                 await _bonusDbContext.SaveChangesAsync();
-            }
-        }
-
-        public async Task<HttpResponseMessage> SendPostTelegramBot(string url, string route)
-        {
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    if (!url.IsNull() && url.EndsWith("/"))
-                    {
-                        url = url.TrimEnd('/');
-                    }
-                    string post = $"{url}/{route}?password={GlobalTelegramSettings.API_PASSWORD}";
-                    var response = await client.GetAsync(post);
-                    return response;
-                }
-            }
-            catch (InvalidOperationException ex)
-            {
-                return new HttpResponseMessage() { StatusCode = System.Net.HttpStatusCode.BadRequest };
             }
         }
         #endregion

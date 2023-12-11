@@ -4,7 +4,6 @@
     using Kendo.Mvc.UI;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    using Newtonsoft.Json;
     using Service.Abstract;
     using Service.Core.TelegramBot;
     using Service.Extensions;
@@ -14,10 +13,15 @@
     public class HomeApiController : Controller
     {
         private readonly ISettingsManager _settingsManager;
+        private readonly TelegramBotManager _telegramBotManager;
+        private readonly UpdateDistributor _updateDistributor;
 
-        public HomeApiController(ISettingsManager settingsManager)
+        public HomeApiController(ISettingsManager settingsManager, TelegramBotManager telegramBotManager, UpdateDistributor updateDistributor, ICustomerManager customerManager)
         {
             _settingsManager = settingsManager;
+            _telegramBotManager = telegramBotManager;
+            _updateDistributor = updateDistributor;
+            _updateDistributor.Init(customerManager, settingsManager, telegramBotManager);
         }
 
         [HttpPost]
@@ -25,15 +29,10 @@
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                    return Json(new { success = false, errors });
-                }
                 //bool isSuperAdmin = _accessManager.CheckUserPermission(User.Identity.Name, nameof(AdminController));
                 bool isSuperAdmin = true;
                 await _settingsManager.UpdateTelegramBot(viewModel, isSuperAdmin);
-                return await SendPostTelegramBot(viewModel.TelegramBotId, GlobalTelegramSettings.RESET_BOT);
+                return await ResetTelegramBot();
             }
             catch (Exception ex)
             {
@@ -47,13 +46,8 @@
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                    return Json(new { success = false, errors });
-                }
                 await _settingsManager.UpdateTelegramBotMenu(viewModel);
-                return await SendPostTelegramBot(viewModel.TelegramBotId, GlobalTelegramSettings.RESET_BOT);
+                return await ResetTelegramBot();
             }
             catch (Exception ex)
             {
@@ -86,7 +80,7 @@
                     var telegramBot = _settingsManager.GetTelegramBot(viewModel.TelegramBotId);
                     var currentCommand = telegramBot.BotCommands.FirstOrDefault(x => x.BotCommandId == viewModel.BotCommandId);
                     await _settingsManager.UpdateTelegramBotCommand(viewModel);
-                    await _settingsManager.SendPostTelegramBot(telegramBot.WebHookUrl, GlobalTelegramSettings.RESET_BOT);
+                    await ResetTelegramBot();
                 }
 
                 var resultData = new[] { viewModel };
@@ -121,7 +115,7 @@
                             await _settingsManager.UpdateTelegramBotCommand(viewModel);
                         }
                     }
-                    await _settingsManager.SendPostTelegramBot(telegramBot.WebHookUrl, GlobalTelegramSettings.RESET_BOT);
+                    await ResetTelegramBot();
                 }
 
                 var resultData = new[] { viewModel };
@@ -144,7 +138,7 @@
                 {
                     await _settingsManager.DeleteTelegramBotCommand(viewModel);
                     var telegramBot = _settingsManager.GetTelegramBot(viewModel.TelegramBotId);
-                    await _settingsManager.SendPostTelegramBot(telegramBot.WebHookUrl, GlobalTelegramSettings.RESET_BOT);
+                    await ResetTelegramBot();
                 }
 
                 var resultData = new[] { viewModel };
@@ -163,7 +157,9 @@
         {
             try
             {
-                return await SendPostTelegramBot(telegramBotId, GlobalTelegramSettings.START_BOT);
+                await _telegramBotManager.Start();
+                bool isStarted = _telegramBotManager.IsStarted;
+                return Json(new { success = true, isStarted });
             }
             catch (Exception ex)
             {
@@ -176,7 +172,10 @@
         {
             try
             {
-                return await SendPostTelegramBot(telegramBotId, GlobalTelegramSettings.STOP_BOT);
+                _telegramBotManager.Stop();
+                _updateDistributor.ClearAllListener();
+                bool isStarted = _telegramBotManager.IsStarted;
+                return Json(new { success = true, isStarted });
             }
             catch (Exception ex)
             {
@@ -186,37 +185,19 @@
         }
 
         [HttpPost]
-        public async Task<JsonResult> ResetTelegramBot(int telegramBotId)
+        public async Task<JsonResult> ResetTelegramBot(int telegramBotId = 1)
         {
             try
             {
-                return await SendPostTelegramBot(telegramBotId, GlobalTelegramSettings.RESET_BOT);
+                await _telegramBotManager.Reset();
+                await _updateDistributor.InitAllListener();
+                bool isStarted = _telegramBotManager.IsStarted;
+                return Json(new { success = true, isStarted });
             }
             catch (Exception ex)
             {
 
                 return Json(new { success = false, message = $"Произошла ошибка при перезагрузке телеграмм бота." });
-            }
-        }
-
-        private async Task<JsonResult> SendPostTelegramBot(int telegramBotId, string route)
-        {
-            using (var client = new HttpClient())
-            {
-                var telegramBot = _settingsManager.GetTelegramBot(telegramBotId);
-                var response = await _settingsManager.SendPostTelegramBot(telegramBot.WebHookUrl, route);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeAnonymousType(content, new { isStarted = false });
-
-                    return Json(new { success = true, result });
-                }
-                else
-                {
-                    return Json(new { success = false });
-                }
             }
         }
 
@@ -245,7 +226,7 @@
                     var telegramBot = _settingsManager.GetTelegramBot(viewModel.TelegramBotId);
                     var currentCondition = telegramBot.RegisterConditions.FirstOrDefault(x => x.RegisterConditionId == viewModel.RegisterConditionId);
                     await _settingsManager.UpdateTelegramBotRegisterCondition(viewModel);
-                    await _settingsManager.SendPostTelegramBot(telegramBot.WebHookUrl, GlobalTelegramSettings.RESET_BOT);
+                    await ResetTelegramBot();
                 }
 
                 var resultData = new[] { viewModel };
@@ -296,7 +277,7 @@
                     var telegramBot = _settingsManager.GetTelegramBot(viewModel.TelegramBotId);
                     var currentCondition = telegramBot.Messages.FirstOrDefault(x => x.MessageId == viewModel.MessageId);
                     await _settingsManager.UpdateTelegramBotMessage(viewModel);
-                    await _settingsManager.SendPostTelegramBot(telegramBot.WebHookUrl, GlobalTelegramSettings.RESET_BOT);
+                    await ResetTelegramBot();
                 }
 
                 var resultData = new[] { viewModel };

@@ -6,7 +6,7 @@ async function saveTelegramBotParams() {
     try {
         let saveData = buildSaveData();
         const response = await $.ajax({
-            url: "/BonusWebApp/SettingsApi/UpdateTelegramBot",
+            url: "/HomeApi/UpdateTelegramBot",
             method: "POST",
             data: { viewModel: saveData }
         });

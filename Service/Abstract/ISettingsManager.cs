@@ -13,7 +13,6 @@
         Task CreateTelegramBotCommand(TelegramBotCommandViewModel viewModel);
         Task UpdateTelegramBotCommand(TelegramBotCommandViewModel viewModel);
         Task DeleteTelegramBotCommand(TelegramBotCommandViewModel viewModel);
-        Task<HttpResponseMessage> SendPostTelegramBot(string url, string route);
         ICollection<TelegramBotRegisterConditionViewModel> GetTelegramBotRegisterConditions(int id = 0);
         Task UpdateTelegramBotRegisterCondition(TelegramBotRegisterConditionViewModel viewModel);
         ICollection<TelegramBotParamMessageViewModel> GetTelegramBotMessages(int id = 0);

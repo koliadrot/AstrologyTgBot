@@ -2,7 +2,6 @@
 {
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    using Newtonsoft.Json;
     using Service.Abstract;
     using Service.Core.TelegramBot;
     using Service.ViewModels;
@@ -15,12 +14,17 @@
         private readonly ILogger<HomeController> _logger;
         private readonly IUserManager _userManager;
         private readonly ISettingsManager _settingsManager;
+        private readonly TelegramBotManager _telegramBotManager;
+        private readonly UpdateDistributor _updateDistributor;
 
-        public HomeController(ILogger<HomeController> logger, IUserManager userManager, ISettingsManager settingsManager)
+        public HomeController(ILogger<HomeController> logger, IUserManager userManager, ISettingsManager settingsManager, TelegramBotManager telegramBotManager, UpdateDistributor updateDistributor, ICustomerManager customerManager)
         {
             _logger = logger;
             _userManager = userManager;
             _settingsManager = settingsManager;
+            _telegramBotManager = telegramBotManager;
+            _updateDistributor = updateDistributor;
+            _updateDistributor.Init(customerManager, settingsManager, telegramBotManager);
         }
 
         public IActionResult Index() => RedirectToAction("TelegramBotParams", "Home");
@@ -31,13 +35,8 @@
         public async Task<ActionResult> TelegramBotParams()
         {
             TelegramBotParamsViewModel viewModel = _settingsManager.GetTelegramBot();
-            var response = await _settingsManager.SendPostTelegramBot(viewModel.WebHookUrl, GlobalTelegramSettings.GET_STATE_BOT);
-            string content = string.Empty;
-            if (response.IsSuccessStatusCode)
-            {
-                content = await response.Content.ReadAsStringAsync();
-            }
-            ViewBag.IsStarted = response.IsSuccessStatusCode && JsonConvert.DeserializeAnonymousType(content, new { isStarted = false }).isStarted;
+
+            ViewBag.IsStarted = _telegramBotManager.IsStarted;
             //ViewBag.IsSuperAdmin = _accessManager.CheckUserPermission(User.Identity.Name, nameof(AdminController));
             ViewBag.IsSuperAdmin = true;
             return View(viewModel);

@@ -20,10 +20,10 @@
 <div class="row justify-content-between">
     <h3 class="ml-2 pl-1">Основные параметры</h3>
     <div class="row mr-2">
-        <h3>Статус</h3>
-        <div id="statusIndicator" class="status-indicator status-indicator-started mt-3 ml-2"></div>
+                <h3>Статус</h3>
+                <div id="statusIndicator" class="status-indicator status-indicator-started mt-2 ml-2"></div>
+            </div>
     </div>
-</div>
 <div id="telegramBotEdit">
     <div class="col-xl-10 col-md pl-0">
         <div class="col-xl-9 col-md pl-1">
@@ -297,7 +297,7 @@
         var message = state ? "Бот обновлен" : "Возникли неполадки";
         var typeMessage = state ? "success" : "error";
         showNotification(message, typeMessage);
-        updateSwitchElements(result.success && result.result.isStarted);
+        updateSwitchElements(result.success && result.isStarted);
         updateSaveButton();
         showLoader(false);
     }
@@ -307,7 +307,7 @@
         showLoader(true);
         var post = "@Url.Action("StartTelegramBot", "HomeApi")";
         const result = await switchOnOffTelegramBot(post, '@Model.TelegramBotId');
-        var state = result.success && result.result.isStarted;
+        var state = result.success && result.isStarted;
         var message = state ? "Бот запущен успешно" : "Возникли неполадки";
         var typeMessage = state ? "success" : "error";
         showNotification(message, typeMessage);
@@ -320,11 +320,11 @@
         showLoader(true);
         var post = "@Url.Action("StopTelegramBot", "HomeApi")";
         const result = await switchOnOffTelegramBot(post, '@Model.TelegramBotId');
-        var state = result.success && !result.result.isStarted;
+        var state = result.success && !result.isStarted;
         var message = state ? "Бот остановлен успешно" : "Возникли неполадки";
         var typeMessage = state ? "success" : "error";
         showNotification(message, typeMessage);
-        updateSwitchElements(result.success && result.result.isStarted);
+        updateSwitchElements(result.success && result.isStarted);
         showLoader(false);
     }
 
@@ -333,7 +333,7 @@
         showLoader(true);
         var post = "@Url.Action("ResetTelegramBot", "HomeApi")";
         const result = await switchOnOffTelegramBot(post, '@Model.TelegramBotId');
-        var state = result.success && result.result.isStarted;
+        var state = result.success && result.isStarted;
         var message = state ? "Бот перезагружен успешно" : "Возникли неполадки";
         var typeMessage = state ? "success" : "error";
         showNotification(message, typeMessage);
@@ -361,8 +361,8 @@
 
 <style>
     .status-indicator {
-        width: 15px;
-        height: 15px;
+        width: 1px;
+        height: 25px;
         border-radius: 50%;
         margin-right: 10px;
         transition: background-color 0.3s;
@@ -374,6 +374,10 @@
 
     .status-indicator-stopped {
         background-color: red;
+    }
+
+    .hidden {
+        display: none;
     }
 </style>
 

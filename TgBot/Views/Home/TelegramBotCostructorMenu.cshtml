@@ -27,7 +27,7 @@
         <div id="_pill1" class="tab-pane fadeIn active">
             <div class="well">
                 <form id="menuForm">
-                    <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 addRootCommand" onclick="addRootCommand('startMenuTree')" title="Добавить команду"><span class="fa-light fa-plus"></span></button>
+                    <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 addRootCommand" onclick="addRootCommand('startMenuTree')" title="Добавить команду"><span class="fas fa-plus"></span></button>
                     <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 showAllCommands" onclick="switchAllCommands('startMenuTree',true)" title="Развернуть все меню">Показать все</button>
                     <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 hideAllCommands" onclick="switchAllCommands('startMenuTree',false)" title="Свернуть все меню">Скрыть все</button>
                     <div id="startMenuTree" class="col pl-0 mt-1">
@@ -39,7 +39,7 @@
         <div id="_pill2" class="tab-pane fadeIn">
             <div class="well">
                 <form id="menuForm">
-                    <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 addRootCommand" onclick="addRootCommand('authMenuTree')" title="Добавить команду"><span class="fa-light fa-plus"></span></button>
+                    <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 addRootCommand" onclick="addRootCommand('authMenuTree')" title="Добавить команду"><span class="fas fa-plus"></span></button>
                     <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 showAllCommands" onclick="switchAllCommands('authMenuTree',true)" title="Развернуть все меню">Показать все</button>
                     <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 hideAllCommands" onclick="switchAllCommands('authMenuTree',false)" title="Свернуть все меню">Скрыть все</button>
                     <div id="authMenuTree" class="col pl-0 mt-1">
@@ -87,6 +87,13 @@
         showNotification(message, typeMessage);
         showLoader(false);
         updateMainButtons();
+
+        var hash = window.location.hash;
+        if (hash === '#_pill1') {
+            showTab('_pill1');
+        } else if (hash === '#_pill2') {
+            showTab('_pill2');
+        }
     }
 
     // Обработка кнопки сброса данных после последнего сохранения
@@ -101,13 +108,13 @@
         var subcommandHtml = `
                 <div class="command-node col pl-0 margin-node" data-guid="${newGuid}" data-level="${level + 1}">
                     <div class="row" data-id="${newGuid}">
-                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 switchPanelButton mr-2" onclick="switchPanelCommand('${newGuid}', ${level + 1})" title="Сернуть"><span class="fa-light fa-arrow-down"></span></button>
+                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 switchPanelButton mr-2" onclick="switchPanelCommand('${newGuid}', ${level + 1})" title="Сернуть"><span class="fas fa-arrow-down"></span></button>
                         <input type="text" class="command-name" placeholder="Название пункта">
                         <div class="col pl-1 pr-0 margin-dropdown" level="${level + 1}" style="max-width: 190px;">
                             <input class="command-dropdown" />
                         </div>
-                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 add-subcommand" onclick="addSubCommand('${newGuid}', ${level + 1}, '${contanier}')" title="Добавить подкомманду"><span class="fa-light fa-plus"></span></button>
-                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 remove-subcommand" onclick="removeCommand('${newGuid}', ${level + 1},false)" title="Удалить подкомманду"><span class="fa-light fa-minus"></span></button>
+                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 add-subcommand" onclick="addSubCommand('${newGuid}', ${level + 1}, '${contanier}')" title="Добавить подкомманду"><span class="fas fa-plus"></span></button>
+                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 remove-subcommand" onclick="removeCommand('${newGuid}', ${level + 1},false)" title="Удалить подкомманду"><span class="fas fa-minus"></span></button>
                     </div>
                 </div>`;
         var currentCommandNode = $(`[data-id="${guid}"]`).closest(".command-node");
@@ -138,7 +145,7 @@
                     commandNameInput.val("");
                     addSubcommandButton.show();
                     switchPanelButton.show();
-                    switchPanelButton.find("span.fa-light").removeClass("fa-arrow-right").addClass("fa-arrow-down");
+                    switchPanelButton.find("span.fas").removeClass("fa-arrow-right").addClass("fa-arrow-down");
                     $(`[data-id="${newGuid}"]`).css("margin-left", "0px");
                 } else {
                     commandNameInput.val(this.text());
@@ -152,7 +159,7 @@
         });
 
         subcommandDropdown.data("kendoDropDownList").trigger("change");
-        var iconSpan = $(`[data-id="${guid}"]`).find(".switchPanelButton").find("span.fa-light");
+        var iconSpan = $(`[data-id="${guid}"]`).find(".switchPanelButton").find("span.fas");
         if (iconSpan.hasClass("fa-arrow-right")) {
             switchPanelCommand(guid, level)
         }
@@ -168,13 +175,13 @@
         var newRootCommandHtml = `
                 <div class="command-node col pl-0" data-guid="${newGuid}" data-level="${level}">
                     <div class="row" data-id="${newGuid}">
-                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 switchPanelButton mr-2" onclick="switchPanelCommand('${newGuid}', ${level})" title="Сернуть"><span class="fa-light fa-arrow-down"></span></button>
+                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 switchPanelButton mr-2" onclick="switchPanelCommand('${newGuid}', ${level})" title="Сернуть"><span class="fas fa-arrow-down"></span></button>
                         <input type="text" class="command-name" placeholder="Название пункта">
                         <div class="col pl-1 pr-0 margin-dropdown" level="${level}" style="max-width: 190px;">
                             <input class="command-dropdown" />
                         </div>
-                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 add-subcommand" onclick="addSubCommand('${newGuid}', ${level}, '${contanier}')" title="Добавить подкомманду"><span class="fa-light fa-plus"></span></button>
-                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 remove-subcommand" onclick="removeCommand('${newGuid}', ${level},false)" title="Удалить подкомманду"><span class="fa-light fa-minus"></span></button>
+                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 add-subcommand" onclick="addSubCommand('${newGuid}', ${level}, '${contanier}')" title="Добавить подкомманду"><span class="fas fa-plus"></span></button>
+                        <button type="button" class="k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base pl-3 pr-3 remove-subcommand" onclick="removeCommand('${newGuid}', ${level},false)" title="Удалить подкомманду"><span class="fas fa-minus"></span></button>
                     </div>
                 </div>`;
         $(`#${contanier}`).append(newRootCommandHtml);
@@ -204,7 +211,7 @@
                     commandNameInput.val("");
                     addSubcommandButton.show();
                     switchPanelButton.show();
-                    switchPanelButton.find("span.fa-light").removeClass("fa-arrow-right").addClass("fa-arrow-down");
+                    switchPanelButton.find("span.fas").removeClass("fa-arrow-right").addClass("fa-arrow-down");
                     $(`[data-id="${newGuid}"]`).css("margin-left", "0px");
                 }
                 else {
@@ -223,6 +230,25 @@
         updateStylesBasedOnMaxLevel(contanier);
         return newGuid;
     }
+
+    // Функция для отображения вкладки по идентификатору
+    function showTab(tabId) {
+        $('.tab-pane').removeClass('active');
+        $('#' + tabId).addClass('active');
+
+        $('.nav-link').removeClass('active');
+        $('[href="#' + tabId + '"]').addClass('active');
+    }
+
+    // Отслеживаем изменения хештега и показываем соответствующую вкладку
+    $(window).on('hashchange', function () {
+        var hash = window.location.hash;
+        if (hash === '#_pill1') {
+            showTab('_pill1');
+        } else if (hash === '#_pill2') {
+            showTab('_pill2');
+        }
+    });
 </script>
 <style>
     .readonly-field {

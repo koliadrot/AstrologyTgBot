@@ -5,7 +5,7 @@ async function saveTelegramBotMenu() {
     try {
         let saveData = buildSaveMenuData();
         const response = await $.ajax({
-            url: "/BonusWebApp/SettingsApi/UpdateTelegramBotMenu",
+            url: "/HomeApi/UpdateTelegramBotMenu",
             method: "POST",
             data: { viewModel: saveData }
         });

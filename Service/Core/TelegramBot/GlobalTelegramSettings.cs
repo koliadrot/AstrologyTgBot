@@ -13,11 +13,6 @@
         public const string BASE_MESSAGE = "api/message";
         public const string UPDATE_MESSAGE = "update";
         public const string SEND_MESSAGE = "send";
-        public const string BASE_BOT = "api/bot";
-        public const string START_BOT = "start";
-        public const string RESET_BOT = "reset";
-        public const string STOP_BOT = "stop";
-        public const string GET_STATE_BOT = "getstate";
         #endregion
     }
 }
