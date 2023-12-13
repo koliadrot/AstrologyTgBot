@@ -5,13 +5,11 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
+    using System;
 
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
+        //public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         public ApplicationDbContext() { }
 
@@ -31,12 +29,12 @@
             }
         }
 
+
         public DbSet<User> Users { get; set; }
         public DbSet<TelegramBotParams> TelegramParams { get; set; }
         public DbSet<TelegramBotCommand> TelegramBotCommands { get; set; }
         public DbSet<TelegramBotRegisterCondition> TelegramBotRegisterConditions { get; set; }
         public DbSet<TelegramBotParamMessage> TelegramBotParamMessages { get; set; }
         public DbSet<ApiAccessToken> ApiAccessTokens { get; set; }
-
     }
 }

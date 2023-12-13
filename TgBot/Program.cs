@@ -1,25 +1,22 @@
-﻿using Data.Core;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Newtonsoft.Json.Serialization;
 using Service.Abstract;
 using Service.Core;
 using Service.Core.TelegramBot;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Конфигурация
 builder.Configuration.AddJsonFile("appsettings.json");
 
-// Конфигурация сервисов
-builder.Services.AddDbContext<ApplicationDbContext>(options => { /* Не добавляем конфигурацию здесь */ });
+// Add services to the container.
 builder.Services.AddTransient<IUserManager, UserManager>();
 builder.Services.AddTransient<IMobileManager, MobileManager>();
 builder.Services.AddTransient<ISettingsManager, SettingsManager>();
 builder.Services.AddTransient<ICustomerManager, CustomerManager>();
 
 // Регистрация AutoMapper
-builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Телеграм бот
 var telegramBot = new TelegramBotManager();
@@ -39,7 +36,6 @@ builder.Services.AddAuthentication(auth =>
     options.LoginPath = "/Account/Login";
 });
 
-// Add services to the container.
 builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
     {

@@ -8,31 +8,63 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    public class MobileManager : IMobileManager
+    public class MobileManager : IMobileManager, IDisposable
     {
-        private readonly ApplicationDbContext _ctx;
-        public MobileManager(ApplicationDbContext context)
+        private readonly ApplicationDbContext _bonusDbContext;
+        public MobileManager()
         {
-            _ctx = context;
+            _bonusDbContext = new ApplicationDbContext();
         }
+
+        #region IDisposable Support
+
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _bonusDbContext.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
         public async Task<UserViewModel?> Auth(LoginViewModel loginViewModel)
         {
             //NOTE: Не смог сохранить хэш правильный
             //var passwordHash = Support.Support.GetMD5(loginViewModel.Password);
 
-            var user = _ctx.Users.FirstOrDefault(f => f.Login == loginViewModel.Login && f.PasswordHash == loginViewModel.Password);
+            var user = _bonusDbContext.Users.FirstOrDefault(f => f.Login == loginViewModel.Login && f.PasswordHash == loginViewModel.Password);
             if (user == null)
             {
                 return null;
             }
             var token = Support.Support.CreateToken(loginViewModel.Login);
-            _ctx.ApiAccessTokens.Add(new ApiAccessToken
+            _bonusDbContext.ApiAccessTokens.Add(new ApiAccessToken
             {
                 UserId = user.UserId,
                 User = user,
                 Token = token
             });
-            await _ctx.SaveChangesAsync();
+            await _bonusDbContext.SaveChangesAsync();
             return new UserViewModel
             {
                 Name = user.Name,
@@ -45,12 +77,12 @@
         }
         public async Task<UserViewModel?> Register(RegisterViewModel viewModel)
         {
-            var user = _ctx.Users.FirstOrDefault(f => f.Login == viewModel.Login);
+            var user = _bonusDbContext.Users.FirstOrDefault(f => f.Login == viewModel.Login);
             if (user != null)
             {
                 throw new AuthException("Логин занят");
             }
-            user = _ctx.Users.FirstOrDefault(f => f.Email == viewModel.Email);
+            user = _bonusDbContext.Users.FirstOrDefault(f => f.Email == viewModel.Email);
             if (user != null)
             {
                 throw new AuthException("Данный Email уже зарегистрирован");
@@ -64,16 +96,16 @@
                 Name = viewModel.Name,
                 PasswordHash = passwordHash,
             };
-            await _ctx.Users.AddAsync(newUser);
-            await _ctx.SaveChangesAsync();
+            await _bonusDbContext.Users.AddAsync(newUser);
+            await _bonusDbContext.SaveChangesAsync();
             var token = Support.Support.CreateToken(viewModel.Login);
-            await _ctx.ApiAccessTokens.AddAsync(new ApiAccessToken
+            await _bonusDbContext.ApiAccessTokens.AddAsync(new ApiAccessToken
             {
                 UserId = newUser.UserId,
                 User = newUser,
                 Token = token
             });
-            await _ctx.SaveChangesAsync();
+            await _bonusDbContext.SaveChangesAsync();
             return new UserViewModel
             {
                 Name = newUser.Name,
@@ -82,6 +114,6 @@
         }
 
 
-        public int GetUserId(string token) => _ctx.ApiAccessTokens.FirstOrDefault(f => f.Token == token)?.UserId ?? -1;
+        public int GetUserId(string token) => _bonusDbContext.ApiAccessTokens.FirstOrDefault(f => f.Token == token)?.UserId ?? -1;
     }
 }

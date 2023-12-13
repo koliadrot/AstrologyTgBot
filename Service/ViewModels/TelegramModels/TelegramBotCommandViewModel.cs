@@ -19,17 +19,17 @@
         /// <summary>
         /// Название команды
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Описание команды
         /// </summary>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Техническое имя команды (/start)
         /// </summary>
-        public string CommandName { get; set; }
+        public string? CommandName { get; set; }
 
         /// <summary>
         /// Включена ли команда
@@ -42,7 +42,7 @@
         /// Custom - многофункциональный
         /// Link - ссылочный
         /// </summary>
-        public string CommandType { get; set; }
+        public string? CommandType { get; set; }
 
         /// <summary>
         /// Команда доступна только после авторизации
@@ -62,6 +62,6 @@
         /// <summary>
         /// Дополнительная информация к команде
         /// </summary>
-        public string AdditionalData { get; set; }
+        public string? AdditionalData { get; set; }
     }
 }
