@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using NLog;
 using Service.Abstract;
 using Service.Abstract.TelegramBot;
 using Service.Core.TelegramBot.Commands;
@@ -15,6 +16,7 @@ namespace Service.Core.TelegramBot
     public class CommandExecutor : IListener
     {
         public ICommand DefaultCommand { get; private set; }
+        public ICommand MenuCommand { get; private set; }
 
         private List<ICommand> _commands;
 
@@ -22,6 +24,7 @@ namespace Service.Core.TelegramBot
         /// Список доступных команд
         /// </summary>
         public IReadOnlyList<ICommand> Commands => _commands;
+
 
         private List<BotCommand> _botCommands;
         private Dictionary<string, string> _messages = new Dictionary<string, string>();
@@ -35,9 +38,19 @@ namespace Service.Core.TelegramBot
         private int _currentLevelMenu = 0;
         public int CurrentLevelMenu { get => _currentLevelMenu; set => _currentLevelMenu = Mathf.Clamp(value, 0, Menu.Count); }
 
-        public Dictionary<int, List<ICommand>> Menu = new Dictionary<int, List<ICommand>>();
+        private string _currentMenuName = string.Empty;
+        public string CurrentMenuName { get => _currentMenuName; set => _currentMenuName = value; }
 
+        public Dictionary<int, Dictionary<string, List<ICommand>>> Menu = new Dictionary<int, Dictionary<string, List<ICommand>>>();
+
+        public ReplyKeyboardMarkup LastMenuReplyButtons;
+
+        private List<ICommand> _reqiredCommands;
         private bool _isBusy;
+
+        private Update _lastCommand;
+
+        private const string MAIN_MENU_LEVEL = "main";
 
         public CommandExecutor(DataManager dataManager)
         {
@@ -62,11 +75,20 @@ namespace Service.Core.TelegramBot
                 }
             }
             DefaultCommand = DefaultCommand ?? new StartCommand(DataManager);
+            MenuCommand = MenuCommand ?? new MenuCommand(DataManager);
             _commands = new List<ICommand>
             {
                 DefaultCommand,
-                new MenuCommand(DataManager)
+                MenuCommand,
+                new RegisterCommand(DataManager),
+                new MyApplicationCommand(DataManager),
             };
+
+            //var fillUserProfileCommand = new FillUserProfileCommand(DataManager);
+            //if (fillUserProfileCommand.HasRequiredConditions(userId))
+            //{
+            //    _commands.Add(fillUserProfileCommand);
+            //}
 
             bool isUserAuth = DataManager.GetData<ICustomerManager>().ExistTelegram(userId);
 
@@ -122,7 +144,30 @@ namespace Service.Core.TelegramBot
             _isBusy = false;
             string menuJson = DataManager.GetData<ISettingsManager>().GetTelegramBot().Menu;
             CreateMenu(menuJson, isUserAuth);
-            //_commands.Add(new QuitCommand(DataManager));
+            var quitCommand = new QuitCommand(DataManager);
+            _commands.Add(quitCommand);
+
+            var getClientApplicationCommand = new GetClientApplicationCommand(DataManager);
+            _commands.Add(getClientApplicationCommand);
+
+            //NOTE:Временное решение добавление кнопки "Назад" внутри комманд, до появления полного функционала
+            _reqiredCommands = new List<ICommand>
+            {
+                quitCommand,
+                DefaultCommand,
+                MenuCommand
+            };
+            RegisterCommand registerCommand = Commands.FirstOrDefault(x => x is RegisterCommand) as RegisterCommand;
+            if (registerCommand != null)
+            {
+                _reqiredCommands.Add(registerCommand);
+            }
+            //fillUserProfileCommand = Commands.FirstOrDefault(x => x is FillUserProfileCommand) as FillUserProfileCommand;
+            //if (fillUserProfileCommand != null)
+            //{
+            //    _reqiredCommands.Add(fillUserProfileCommand);
+            //}
+
         }
 
         public void StartListen(IUpdater updater) => _updater = updater;
@@ -135,22 +180,33 @@ namespace Service.Core.TelegramBot
             }
         }
 
-        public async Task GetUpdate(Update update)
+        public async Task GetUpdate(Update update, bool isForce = false)
         {
+            string messageText = string.Empty;
+            long userId = Get.GetUserId(update);
+            _lastCommand = update;
             try
             {
-                if (!_isBusy)
+                if (!_isBusy || isForce)
                 {
                     _isBusy = true;
-                    string messageText = Get.GetText(update);
+                    messageText = Get.GetText(update);
 
-                    if (CurrentUpdater == null || Commands.Contains(messageText))
+                    if (CurrentUpdater != null)
                     {
-                        await ExecuteCommand(update);
+                        if (_reqiredCommands.Contains(messageText))
+                        {
+                            await ExecuteCommand(update, _reqiredCommands);
+                        }
+                        else
+                        {
+                            await CurrentUpdater.GetUpdate(update);
+                        }
                     }
                     else
                     {
-                        await CurrentUpdater.GetUpdate(update);
+                        Menu[CurrentLevelMenu].TryGetValue(CurrentMenuName, out List<ICommand> listCommands);
+                        await ExecuteCommand(update, listCommands);
                     }
                     _isBusy = false;
                 }
@@ -162,11 +218,22 @@ namespace Service.Core.TelegramBot
             catch (Exception ex)
             {
                 await ErrorMessage(update);
+                DataManager.GetData<ILogger>().Error($"User:{userId} - Failed update message {messageText}! {ex}");
             }
         }
 
-        private async Task ExecuteCommand(Update update)
+        /// <summary>
+        /// Переобновление
+        /// </summary>
+        /// <returns></returns>
+        public async Task ReUpdate() => await GetUpdate(_lastCommand, true);
+
+        private async Task ExecuteCommand(Update update, List<ICommand> listCommands = null)
         {
+            if (listCommands == null || !listCommands.Any())
+            {
+                listCommands = _commands;
+            }
             List<string> messageTexts = Get.GetText(update).Split(' ').ToList();
             if (messageTexts[0] == DefaultCommand.Name && messageTexts.Count > 1)
             {
@@ -179,7 +246,15 @@ namespace Service.Core.TelegramBot
             _updater = null;
             if (!messageTexts[0].IsNull())
             {
-                foreach (var command in _commands)
+                foreach (var command in listCommands)
+                {
+                    if (command.IsValidCommand(messageText))
+                    {
+                        await command.Execute(update);
+                        return;
+                    }
+                }
+                foreach (var command in _commands.Where(x => !(x is TransitionCommand)))
                 {
                     if (command.IsValidCommand(messageText))
                     {
@@ -198,6 +273,7 @@ namespace Service.Core.TelegramBot
         /// <returns></returns>
         public async Task ListCommandMessage(Update update, bool isWrongMessage = true, string additionalMessageText = "")
         {
+            LastMenuReplyButtons = null;
             long chatId = Get.GetChatId(update);
             long userId = Get.GetUserId(update);
             await InitCommands(userId);
@@ -209,19 +285,29 @@ namespace Service.Core.TelegramBot
             }
             if (!additionalMessageText.IsNull())
             {
-                fullMessage += $"{additionalMessageText}\n";
+                fullMessage += $"{additionalMessageText}";
             }
             ReplyKeyboardMarkup replyKeyboard = null;
             CurrentLevelMenu = 0;
-            if (Menu.Count > 0)
+            CurrentMenuName = MAIN_MENU_LEVEL;
+            if (Menu.Any() && Menu[CurrentLevelMenu].TryGetValue(MAIN_MENU_LEVEL, out List<ICommand> mainLevelCommands))
             {
-                if (Menu[CurrentLevelMenu].Count > 2)
+                if (mainLevelCommands.Count > 2)
                 {
                     var inlineKeyboardButtons = new List<List<KeyboardButton>>();
-
-                    foreach (var miniCommand in Menu[CurrentLevelMenu])
+                    foreach (var miniCommand in mainLevelCommands)
                     {
-                        var row = new List<KeyboardButton> { new KeyboardButton(miniCommand.ShortDescription) };
+                        var row = new List<KeyboardButton>();
+                        var infoCommand = miniCommand as InfoCommand;
+                        if (infoCommand != null && infoCommand.Info.IsValidLink())
+                        {
+                            var url = new WebAppInfo() { Url = infoCommand.Info };
+                            row.Add(KeyboardButton.WithWebApp(infoCommand.ShortDescription, url));
+                        }
+                        else
+                        {
+                            row.Add(new KeyboardButton(miniCommand.ShortDescription));
+                        }
                         inlineKeyboardButtons.Add(row);
                     }
 
@@ -232,24 +318,73 @@ namespace Service.Core.TelegramBot
                     List<KeyboardButton> inlineKeyboardButtons = new List<KeyboardButton>();
                     replyKeyboard = new ReplyKeyboardMarkup(new[]
                     {
-                    inlineKeyboardButtons
-                });
+                        inlineKeyboardButtons
+                    });
 
-                    foreach (var command in Menu[CurrentLevelMenu])
+                    foreach (var command in mainLevelCommands)
                     {
-                        inlineKeyboardButtons.Add(new KeyboardButton(command.ShortDescription));
+                        var infoCommand = command as InfoCommand;
+                        if (infoCommand != null && infoCommand.Info.IsValidLink())
+                        {
+                            var url = new WebAppInfo() { Url = infoCommand.Info };
+                            inlineKeyboardButtons.Add(KeyboardButton.WithWebApp(infoCommand.ShortDescription, url));
+                        }
+                        else
+                        {
+                            inlineKeyboardButtons.Add(new KeyboardButton(command.ShortDescription));
+                        }
                     }
                 }
-                replyKeyboard.ResizeKeyboard = true;
-                replyKeyboard.IsPersistent = true;
             }
 
             if (!DataManager.GetData<ICustomerManager>().ExistTelegram(userId))
             {
                 fullMessage += _messages[MessageKey.NEED_AUTH];
             }
-
+            if (replyKeyboard != null)
+            {
+                replyKeyboard.ResizeKeyboard = true;
+                replyKeyboard.IsPersistent = false;
+            }
             await DataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, fullMessage, replyMarkup: replyKeyboard);
+        }
+
+        /// <summary>
+        /// Отправляет текущие команды последнего меню
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
+        public async Task SendCurrentListCommand(Update update)
+        {
+            _updater = null;
+            long chatId = Get.GetChatId(update);
+            if (LastMenuReplyButtons != null)
+            {
+                await DataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, _messages[MessageKey.TRANSITION_HELP], replyMarkup: LastMenuReplyButtons);
+            }
+            else
+            {
+                await ListCommandMessage(update, false, _messages[MessageKey.TRANSITION_HELP]);
+            }
+        }
+
+        /// <summary>
+        /// Есть ли команда
+        /// </summary>
+        /// <param name="messageText"></param>
+        /// <param name="isIgnoreLevvel"></param>
+        /// <returns></returns>
+        public bool HasCommand(string messageText, bool isIgnoreLevvel = true)
+        {
+            if (isIgnoreLevvel)
+            {
+                return Commands.Contains(messageText);
+            }
+            else
+            {
+                Menu[CurrentLevelMenu].TryGetValue(CurrentMenuName, out List<ICommand> listCommands);
+                return listCommands.Contains(messageText);
+            }
         }
 
         private async Task WaitMessage(Update update)
@@ -275,6 +410,13 @@ namespace Service.Core.TelegramBot
         /// <returns></returns>
         public async Task DefaultCommandMessage(Update update) => await DefaultCommand.Execute(update);
 
+        /// <summary>
+        /// Комманда Меню
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
+        public async Task MenuCommandMessage(Update update) => await MenuCommand.Execute(update);
+
         private ICommand GetCommand(string commandName) => Commands.FirstOrDefault(x => x.Name == commandName);
 
 
@@ -283,28 +425,35 @@ namespace Service.Core.TelegramBot
             Menu.Clear();
             MenuList menuList = JsonConvert.DeserializeObject<MenuList>(menuJson);
             Menu menu = isAuth ? menuList.AuthMenu : menuList.StartMenu;
-            PrintMenu(menu.Items);
+            PrintMenu(menu.Items, parentName: MAIN_MENU_LEVEL);
             foreach (var levelCommands in Menu.Values)
             {
-                levelCommands.Sort((cmd1, cmd2) =>
+                foreach (var levelCommand in levelCommands.Values)
                 {
-                    if (cmd1.Name.EndsWith("quit", StringComparison.OrdinalIgnoreCase))
+                    if (levelCommand.Any(x => x.Name.EndsWith("quit", StringComparison.OrdinalIgnoreCase)))
                     {
-                        return 1;
+                        levelCommand.Sort((cmd1, cmd2) =>
+                        {
+                            if (cmd1.Name.EndsWith("quit", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return 1;
+                            }
+                            else if (cmd2.Name.EndsWith("quit", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return -1;
+                            }
+                            else
+                            {
+                                return string.Compare(cmd1.Name, cmd2.Name, StringComparison.OrdinalIgnoreCase);
+                            }
+                        });
                     }
-                    else if (cmd2.Name.EndsWith("quit", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return -1;
-                    }
-                    else
-                    {
-                        return string.Compare(cmd1.Name, cmd2.Name, StringComparison.OrdinalIgnoreCase);
-                    }
-                });
+                }
+
             }
         }
 
-        private void PrintMenu(List<MenuItem> menuItems, int level = 0)
+        private void PrintMenu(List<MenuItem> menuItems, string parentName, int level = 0)
         {
             foreach (var item in menuItems)
             {
@@ -329,11 +478,23 @@ namespace Service.Core.TelegramBot
                         {
                             command
                         };
-                        Menu.Add(level, commands);
+                        Dictionary<string, List<ICommand>> keyValuePairs = new Dictionary<string, List<ICommand>>()
+                        {
+                            {parentName, commands},
+                        };
+                        Menu.Add(level, keyValuePairs);
                     }
                     else
                     {
-                        Menu[level].Add(command);
+                        var keyValuePairs = Menu[level];
+                        if (!keyValuePairs.ContainsKey(parentName))
+                        {
+                            keyValuePairs.Add(parentName, new List<ICommand>() { command });
+                        }
+                        else
+                        {
+                            keyValuePairs[parentName].Add(command);
+                        }
                     }
                 }
                 if (item.SubMenu != null && item.SubMenu.Items != null)
@@ -347,7 +508,8 @@ namespace Service.Core.TelegramBot
                     {
                         Name = item.CommandName + "quit",
                         ShortDescription = _messages[ReplyButton.BACK],
-                        IsForwardDirection = false
+                        IsForwardDirection = false,
+                        ParentShortDescription = parentName
                     };
 
 
@@ -357,11 +519,23 @@ namespace Service.Core.TelegramBot
                         {
                             transitionEnterCommand,
                         };
-                        Menu.Add(level, commands);
+                        Dictionary<string, List<ICommand>> keyValuePairs = new Dictionary<string, List<ICommand>>()
+                        {
+                            {parentName, commands},
+                        };
+                        Menu.Add(level, keyValuePairs);
                     }
                     else
                     {
-                        Menu[level].Add(transitionEnterCommand);
+                        var keyValuePairs = Menu[level];
+                        if (!keyValuePairs.ContainsKey(parentName))
+                        {
+                            keyValuePairs.Add(parentName, new List<ICommand>() { transitionEnterCommand });
+                        }
+                        else
+                        {
+                            keyValuePairs[parentName].Add(transitionEnterCommand);
+                        }
                     }
 
                     if (!Menu.ContainsKey(level + 1))
@@ -370,17 +544,29 @@ namespace Service.Core.TelegramBot
                         {
                             transitionQuitCommand,
                         };
-                        Menu.Add(level + 1, commands);
+                        Dictionary<string, List<ICommand>> keyValuePairs = new Dictionary<string, List<ICommand>>()
+                        {
+                            {transitionEnterCommand.ShortDescription, commands},
+                        };
+                        Menu.Add(level + 1, keyValuePairs);
                     }
                     else
                     {
-                        Menu[level + 1].Add(transitionQuitCommand);
+                        var keyValuePairs = Menu[level + 1];
+                        if (!keyValuePairs.ContainsKey(transitionEnterCommand.ShortDescription))
+                        {
+                            keyValuePairs.Add(transitionEnterCommand.ShortDescription, new List<ICommand>() { transitionQuitCommand });
+                        }
+                        else
+                        {
+                            keyValuePairs[transitionEnterCommand.ShortDescription].Add(transitionQuitCommand);
+                        }
                     }
 
                     _commands.Add(transitionEnterCommand);
                     _commands.Add(transitionQuitCommand);
 
-                    PrintMenu(item.SubMenu.Items, level + 1);
+                    PrintMenu(item.SubMenu.Items, transitionEnterCommand.ShortDescription, level + 1);
                 }
             }
         }

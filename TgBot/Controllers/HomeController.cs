@@ -7,24 +7,25 @@
     using Service.ViewModels;
     using Service.ViewModels.TelegramModels;
     using System.Diagnostics;
+    using ILogger = NLog.ILogger;
 
     [Authorize]
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger _logger;
         private readonly IUserManager _userManager;
         private readonly ISettingsManager _settingsManager;
         private readonly TelegramBotManager _telegramBotManager;
         private readonly UpdateDistributor _updateDistributor;
 
-        public HomeController(ILogger<HomeController> logger, IUserManager userManager, ISettingsManager settingsManager, TelegramBotManager telegramBotManager, UpdateDistributor updateDistributor, ICustomerManager customerManager)
+        public HomeController(IUserManager userManager, ISettingsManager settingsManager, TelegramBotManager telegramBotManager, UpdateDistributor updateDistributor, ICustomerManager customerManager, ILogger logger)
         {
             _logger = logger;
             _userManager = userManager;
             _settingsManager = settingsManager;
             _telegramBotManager = telegramBotManager;
             _updateDistributor = updateDistributor;
-            _updateDistributor.Init(customerManager, settingsManager, telegramBotManager);
+            _updateDistributor.Init(customerManager, settingsManager, telegramBotManager, logger);
         }
 
         public IActionResult Index() => RedirectToAction("TelegramBotParams", "Home");
@@ -32,13 +33,20 @@
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error() => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 
-        public async Task<ActionResult> TelegramBotParams()
+        public ActionResult TelegramBotParams()
         {
             TelegramBotParamsViewModel viewModel = _settingsManager.GetTelegramBot();
 
             ViewBag.IsStarted = _telegramBotManager.IsStarted;
-            //ViewBag.IsSuperAdmin = _accessManager.CheckUserPermission(User.Identity.Name, nameof(AdminController));
+            ViewBag.IsManulStopped = _telegramBotManager.IsManulStopped;
+
+            //NOTE:Переключатель доступа (не завершенный, так как в базе не сохраняется)
+            ViewBag.IsAccessible = true;
+
+            //NOTE:При разделении админки и сервера понадобится при запросах на другой сервер
+            ViewBag.IsSuccessServer = true;
             ViewBag.IsSuperAdmin = true;
+
             return View(viewModel);
         }
 

@@ -1,6 +1,5 @@
 ﻿using Service.Abstract.TelegramBot;
 using Service.Enums;
-using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
 namespace Service.Core.TelegramBot.Commands
@@ -24,12 +23,23 @@ namespace Service.Core.TelegramBot.Commands
         public bool IsStartMenu => true;
 
         private readonly DataManager _dataManager;
+        private readonly Dictionary<string, string> _messages;
 
         public MenuCommand(DataManager dataManager)
         {
             _dataManager = dataManager;
+            _messages = _dataManager.GetData<CommandExecutor>().Messages;
         }
 
-        public async Task Execute(Update update, string[] arg = null) => await _dataManager.GetData<CommandExecutor>().ListCommandMessage(update, false, "Пожалуйста,выберете,какую информацию вы хотите получить 👇");
+        public async Task SendStartMessage(Update update)
+        {
+            if (_messages.TryGetValue(ShortDescription, out string startMessage))
+            {
+                long chatId = Get.GetChatId(update);
+                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, startMessage);
+            }
+        }
+
+        public async Task Execute(Update update, string[] arg = null) => await _dataManager.GetData<CommandExecutor>().ListCommandMessage(update, false, _messages[MessageKey.TRANSITION_HELP]);
     }
 }

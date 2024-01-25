@@ -23,12 +23,12 @@ function buildSaveData() {
     var data = {
         TelegramBotId: $("#TelegramBotId").val(),
         BotName: $("#BotName").val(),
+        BotAbout: $("#BotAbout").val(),
+        BotDescription: $("#BotDescription").val(),
         BotUserName: $("#BotUserName").val(),
         TokenApi: $("#TokenAPI").val(),
-        WebHookUrl: $("#WebHookUrl").val(),
         TosUrl: $("#TosUrl").val(),
-        AcceptPromotionsBySms: $("#AcceptPromotionsBySms").prop("checked"),
-        /*        AcceptElectronicReceipts: $("#AcceptElectronicReceipts").prop("checked"),*/
+        WebHookUrl: $("#WebHookUrl").val(),
         HelloText: $("#HelloText").val()
     };
     return data;

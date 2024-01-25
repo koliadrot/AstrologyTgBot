@@ -19,11 +19,11 @@
               .Events(events => events.Edit("onGridEdit"))
               .Columns(columns =>
               {
+                  columns.Bound(e => e.Order).Title("Порядок").Width(35);
                   columns.Bound(e => e.Name).Title("Название").Width(150);
-                  columns.Bound(e => e.Order).Hidden();
-                  columns.Bound(e => e.IsCanPass).Hidden();
+                  columns.Bound(e => e.IsCanPass).Title("Кнопка \"Пропустить\"").Width(100).ClientTemplate("# if(IsCanPass){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
                   columns.Bound(e => e.IsNecessarily).Hidden();
-                  columns.Bound(e => e.IsEnable).Title("Обязательно").Width(100).ClientTemplate("# if(IsEnable){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
+                  columns.Bound(e => e.IsEnable).Title("Показывать при регистрации").Width(100).ClientTemplate("# if(IsEnable){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
               })
                 .ToolBar(toolbar =>
                 {

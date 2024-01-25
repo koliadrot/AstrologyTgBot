@@ -8,20 +8,23 @@
     using Service.Core.TelegramBot;
     using Service.Extensions;
     using Service.ViewModels.TelegramModels;
+    using ILogger = NLog.ILogger;
 
     [Authorize]
     public class HomeApiController : Controller
     {
+        private readonly ILogger _logger;
         private readonly ISettingsManager _settingsManager;
         private readonly TelegramBotManager _telegramBotManager;
         private readonly UpdateDistributor _updateDistributor;
 
-        public HomeApiController(ISettingsManager settingsManager, TelegramBotManager telegramBotManager, UpdateDistributor updateDistributor, ICustomerManager customerManager)
+        public HomeApiController(ISettingsManager settingsManager, TelegramBotManager telegramBotManager, UpdateDistributor updateDistributor, ICustomerManager customerManager, ILogger logger)
         {
+            _logger = logger;
             _settingsManager = settingsManager;
             _telegramBotManager = telegramBotManager;
             _updateDistributor = updateDistributor;
-            _updateDistributor.Init(customerManager, settingsManager, telegramBotManager);
+            _updateDistributor.Init(customerManager, settingsManager, telegramBotManager, logger);
         }
 
         [HttpPost]
@@ -244,7 +247,7 @@
         {
             try
             {
-                var result = _settingsManager.GetTelegramBotMessages().Where(x => !x.IsButton);
+                var result = _settingsManager.GetTelegramBotMessages().Where(x => !x.IsButton && x.IsSystem);
                 return Json(result.ToDataSourceResult(request));
             }
             catch (Exception ex)
@@ -264,6 +267,20 @@
             {
 
                 return Json(new { success = false, message = "Произошла ошибка при получении кнопок телеграмм бота." });
+            }
+        }
+
+        public ActionResult GetTelegramBotParamUserMessages([DataSourceRequest] DataSourceRequest request)
+        {
+            try
+            {
+                var result = _settingsManager.GetTelegramBotMessages().Where(x => !x.IsButton && !x.IsSystem);
+                return Json(result.ToDataSourceResult(request));
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex.ToString());
+                return Json(new { success = false, message = "Произошла ошибка при получении пользовательских сообщений телеграмм бота." });
             }
         }
 

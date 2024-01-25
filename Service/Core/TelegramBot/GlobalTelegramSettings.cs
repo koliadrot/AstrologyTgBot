@@ -12,6 +12,7 @@
         #region Routes
         public const string BASE_MESSAGE = "api/message";
         public const string UPDATE_MESSAGE = "update";
+        public const string RE_UPDATE_MESSAGE = "reupdate";
         public const string SEND_MESSAGE = "send";
         #endregion
     }

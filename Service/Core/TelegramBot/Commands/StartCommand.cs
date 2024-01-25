@@ -34,9 +34,18 @@ namespace Service.Core.TelegramBot.Commands
             _messages = _dataManager.GetData<CommandExecutor>().Messages;
         }
 
+        public async Task SendStartMessage(Update update)
+        {
+            if (_messages.TryGetValue(ShortDescription, out string startMessage))
+            {
+                long chatId = Get.GetChatId(update);
+                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, startMessage);
+            }
+        }
+
         public async Task Execute(Update update, string[] arg = null)
         {
-            long chatId = Get.GetChatId(update);
+            await SendStartMessage(update);
             string message = string.Empty;
             List<KeyboardButton> inlineKeyboardButtons = new List<KeyboardButton>();
             ReplyKeyboardMarkup replyKeyboard = new ReplyKeyboardMarkup(new[]

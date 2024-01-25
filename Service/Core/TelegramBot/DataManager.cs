@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Service.Core.TelegramBot
+﻿namespace Service.Core.TelegramBot
 {
     /// <summary>
     /// менеджер сущностей
@@ -122,7 +118,7 @@ namespace Service.Core.TelegramBot
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         /// <exception cref="KeyNotFoundException"></exception>
-        public T GetData<T>()
+        public T? GetData<T>()
         {
             foreach (var instance in entityList)
             {
@@ -131,7 +127,14 @@ namespace Service.Core.TelegramBot
                     return (T)instance.Value.Entity;
                 }
             }
-            throw new KeyNotFoundException($"Не найдена сущность с типом {typeof(T)} в {nameof(DataManager)}.");
+            try
+            {
+                throw new KeyNotFoundException($"Не найдена сущность с типом {typeof(T)} в {nameof(DataManager)}.");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return default;
+            }
         }
     }
 }

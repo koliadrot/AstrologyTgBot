@@ -51,5 +51,12 @@ namespace Service.Abstract.TelegramBot
         /// <param name="update"></param>
         /// <returns></returns>
         Task Execute(Update update, string[] args = null);
+
+        /// <summary>
+        /// Отправляет стартовое сообщение
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
+        Task SendStartMessage(Update update);
     }
 }

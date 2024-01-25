@@ -18,6 +18,16 @@
         public string BotName { get; set; }
 
         /// <summary>
+        /// Короткое описание
+        /// </summary>
+        public string BotAbout { get; set; }
+
+        /// <summary>
+        /// Полное описание
+        /// </summary>
+        public string BotDescription { get; set; }
+
+        /// <summary>
         /// Ник нейм бота
         /// </summary>
         public string BotUserName { get; set; }
@@ -36,16 +46,6 @@
         /// Ссылка на политику использования
         /// </summary>
         public string TosUrl { get; set; }
-
-        /// <summary>
-        /// Спрашивать при регистрации о рассылке персональных скидках,акциях и распродажах 
-        /// </summary>
-        public bool AcceptPromotionsBySms { get; set; }
-
-        /// <summary>
-        /// Спрашивать при регистрации о отправке электронных чеках
-        /// </summary>
-        public bool AcceptElectronicReceipts { get; set; }
 
         /// <summary>
         /// Список команд меню
@@ -71,5 +71,15 @@
         /// Состав меню телеграм бота в JSON формате
         /// </summary>
         public string Menu { get; set; }
+
+        /// <summary>
+        /// Последний статус бота
+        /// </summary>
+        public string LastStatus { get; set; }
+
+        /// <summary>
+        /// Пользовательские сообщения конструктора меню
+        /// </summary>
+        public Dictionary<string, string> ConstructorMessages { get; set; } = new Dictionary<string, string>();
     }
 }

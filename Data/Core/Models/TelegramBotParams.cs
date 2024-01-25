@@ -6,17 +6,18 @@
     {
         [Key]
         public int TelegramBotId { get; set; }
-        public string BotName { get; set; }
-        public string BotUserName { get; set; }
-        public string TokenApi { get; set; }
-        public string WebHookUrl { get; set; }
-        public string TosUrl { get; set; }
-        public bool AcceptPromotionsBySms { get; set; }
-        public bool AcceptElectronicReceipts { get; set; }
-        public string HelloText { get; set; }
-        public string Menu { get; set; }
+        public string? BotName { get; set; }
+        public string? BotAbout { get; set; }
+        public string? BotDescription { get; set; }
+        public string? BotUserName { get; set; }
+        public string? TokenApi { get; set; }
+        public string? WebHookUrl { get; set; }
+        public string? TosUrl { get; set; }
+        public string? HelloText { get; set; }
+        public string? Menu { get; set; }
         public virtual ICollection<TelegramBotCommand> BotCommands { get; set; } = new List<TelegramBotCommand>();
         public virtual ICollection<TelegramBotRegisterCondition> BotRegisterConditions { get; set; } = new List<TelegramBotRegisterCondition>();
         public virtual ICollection<TelegramBotParamMessage> Messages { get; set; } = new List<TelegramBotParamMessage>();
+        public string LastStatus { get; set; }
     }
 }

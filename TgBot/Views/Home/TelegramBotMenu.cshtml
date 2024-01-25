@@ -40,8 +40,10 @@
                   columns.Bound(e => e.Name).Title("Название").Width(150);
                   columns.Bound(e => e.Description).Title("Описание").Width(200);
                   columns.Bound(e => e.CommandType).Title("Тип").Width(150).ClientTemplate("#= onCommandTypeDescription(CommandType) #");
-                  columns.Bound(e => e.IsAuth).Title("После авторизации").Width(160).ClientTemplate("# if(IsAuth){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
-                  columns.Bound(e => e.IsDefault).Title("Всегда доступна").Width(140).ClientTemplate("# if(IsDefault){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
+                  columns.Bound(e => e.IsAuth)
+                    .Title("Показывать")
+                    .Width(200)
+                    .ClientTemplate("# if(IsDefault) { #" + "Всегда" + "# } else if(IsAuth) { #" + "После регистрации" + "# } else { #" + "До регистрации" + "# } #");
                   columns.Bound(e => e.IsEnable).Title("Активна").Width(100).ClientTemplate("# if(IsEnable){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
                   columns.Command(command =>
                   {
@@ -65,6 +67,8 @@
                 .Model(model =>
                 {
                     model.Id(x => x.BotCommandId);
+                    model.Field(x => x.IsAuth);
+                    model.Field(x => x.IsDefault);
                 })
                 .Events(events => events.Error("onHandlerError"))
                 .ServerOperation(true)

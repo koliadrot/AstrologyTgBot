@@ -10,6 +10,8 @@
 @Html.HiddenFor(m => m.BotCommandId)
 @Html.HiddenFor(m => m.CommandName)
 @Html.HiddenFor(m => m.IsPublic)
+@Html.HiddenFor(m => m.IsAuth)
+@Html.HiddenFor(m => m.IsDefault)
 
 <script>
 
@@ -24,6 +26,26 @@
         }
     }
 
+    function onDropDownStateCommandChange(e) {
+        var value = this.value();
+        switch (value) {
+            case "BeforeAuth":
+                $("#IsAuth").val('false').trigger('change');
+                $("#IsDefault").val('false').trigger('change');
+                break;
+            case "AlwaysAvailable":
+                $("#IsAuth").val('false').trigger('change');
+                $("#IsDefault").val('true').trigger('change');
+                break;
+            case "AfterAuth":
+                $("#IsAuth").val('true').trigger('change');
+                $("#IsDefault").val('false').trigger('change');
+                break;
+            default:
+                break;
+        }
+    }
+
     function initMainButtons() {
         setTimeout(function () {
             var isNewCommand = $("#BotCommandId").val() == 0;
@@ -33,7 +55,7 @@
                 var cancelButton = addCommandWindow.find(".k-grid-cancel");
                 var title = addCommandWindow.find(".k-window-title");
 
-                updateButton.text(isNewCommand ? "Создать" : "Обновить");
+                updateButton.text(isNewCommand ? "Создать" : "Сохранить");
                 title.html(isNewCommand ? "Создание новой команды" : "Редактирование команды");
                 cancelButton.text("Отмена");
 
@@ -54,6 +76,9 @@
             else {
                 $(".isAccessPublic").hide();
             }
+
+            var value = $("#IsAuth").val() == "true" ? "AfterAuth" : $("#IsDefault").val() == "true" ? "AlwaysAvailable" : "BeforeAuth";
+            $("#statusSelect").data("kendoDropDownList").value(value);
         }, 100);
     }
 
@@ -118,31 +143,29 @@
                     </div>
                 </div>
             </div>
-
+        </div>
             <div class="col isLockToEdit">
                 <div class="row">
                     <div class="col-md-6 col-xl-4 col-6 col-sm-6 pr-0">
                         <div class="form-group">
-                            <label>После авторизации:</label>
+                            <label>Статус:</label>
                         </div>
                     </div>
                     <div class="col-md col-1 pl-2">
                         <div class="form-group">
-                            @(Html.Kendo().CheckBoxFor(m => m.IsAuth).HtmlAttributes(new { id = "IsAuth", @class = "form-check-input" }))
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col isLockToEdit">
-                <div class="row">
-                    <div class="col-md-6 col-xl-4 col-6 col-sm-6 pr-0">
-                        <div class="form-group">
-                            <label>Всегда доступна:</label>
-                        </div>
-                    </div>
-                    <div class="col-md col-1 pl-2">
-                        <div class="form-group">
-                            @(Html.Kendo().CheckBoxFor(m => m.IsDefault).HtmlAttributes(new { id = "IsDefault", @class = "form-check-input" }))
+                            @(Html.Kendo().DropDownList()
+                                .Name("statusSelect")
+                                .DataTextField("Text")
+                                .DataValueField("Value")
+                                .BindTo(new List<SelectListItem>
+                            {
+                            new SelectListItem { Text = "До регистрации", Value = "BeforeAuth" },
+                            new SelectListItem { Text = "Всегда", Value = "AlwaysAvailable" },
+                            new SelectListItem { Text = "После регистрации", Value = "AfterAuth" }
+                            })
+                                .HtmlAttributes(new { @class = "form-control" })
+                                .Events(e => e.Change("onDropDownStateCommandChange"))
+                                )
                         </div>
                     </div>
                 </div>

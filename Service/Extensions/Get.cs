@@ -6,6 +6,7 @@ namespace Service
 {
     public static class Get
     {
+
         /// <summary>
         /// Получает Id чата запроса
         /// </summary>
@@ -66,6 +67,10 @@ namespace Service
                         {
                             return update.Message.Contact.PhoneNumber;
                         }
+                        else if (update.Message.Location != null)
+                        {
+                            return $"{update.Message.Location.Latitude}:{update.Message.Location.Longitude}";
+                        }
                         break;
                     }
                     else
@@ -123,6 +128,94 @@ namespace Service
         }
 
         /// <summary>
+        /// Получает техническое имя пользователя
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
+        public static string GetUserName(Update update)
+        {
+            switch (update.Type)
+            {
+                case UpdateType.Message:
+                    return update.Message.From.Username;
+                case UpdateType.CallbackQuery:
+                    return update.CallbackQuery.From.Username;
+                case UpdateType.Unknown:
+                    break;
+                case UpdateType.InlineQuery:
+                    break;
+                case UpdateType.ChosenInlineResult:
+                    break;
+                case UpdateType.EditedMessage:
+                    break;
+                case UpdateType.ChannelPost:
+                    break;
+                case UpdateType.EditedChannelPost:
+                    break;
+                case UpdateType.ShippingQuery:
+                    break;
+                case UpdateType.PreCheckoutQuery:
+                    break;
+                case UpdateType.Poll:
+                    break;
+                case UpdateType.PollAnswer:
+                    break;
+                case UpdateType.MyChatMember:
+                    break;
+                case UpdateType.ChatMember:
+                    break;
+                case UpdateType.ChatJoinRequest:
+                    break;
+                default: return string.Empty;
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Сообщение отправлено ботом?
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
+        public static bool IsBot(Update update)
+        {
+            switch (update.Type)
+            {
+                case UpdateType.Message:
+                    return update.Message.From.IsBot;
+                case UpdateType.CallbackQuery:
+                    return update.CallbackQuery.From.IsBot;
+                case UpdateType.Unknown:
+                    break;
+                case UpdateType.InlineQuery:
+                    break;
+                case UpdateType.ChosenInlineResult:
+                    break;
+                case UpdateType.EditedMessage:
+                    break;
+                case UpdateType.ChannelPost:
+                    break;
+                case UpdateType.EditedChannelPost:
+                    break;
+                case UpdateType.ShippingQuery:
+                    break;
+                case UpdateType.PreCheckoutQuery:
+                    break;
+                case UpdateType.Poll:
+                    break;
+                case UpdateType.PollAnswer:
+                    break;
+                case UpdateType.MyChatMember:
+                    break;
+                case UpdateType.ChatMember:
+                    break;
+                case UpdateType.ChatJoinRequest:
+                    break;
+                default: return false;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Приводит мобильный номер к нормальному виду
         /// </summary>
         /// <param name="number"></param>
@@ -170,6 +263,22 @@ namespace Service
                 }
             }
             return resultText;
+        }
+
+        /// <summary>
+        /// Получить возраст
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        public static int GetAge(DateTime startDate)
+        {
+            int age = DateTime.Now.Year - startDate.Year;
+            if (DateTime.Now.Month < startDate.Month || (DateTime.Now.Month == startDate.Month && DateTime.Now.Day < startDate.Day))
+            {
+                age -= 1;
+            }
+            return age;
         }
     }
 }

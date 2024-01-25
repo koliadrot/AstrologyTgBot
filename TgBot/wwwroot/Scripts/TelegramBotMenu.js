@@ -1,8 +1,10 @@
 ﻿var startMenuData;
+var messages = {};
 
 // Сохранение данных телеграм бота
 async function saveTelegramBotMenu() {
     try {
+        clearNotExistMessages();
         let saveData = buildSaveMenuData();
         const response = await $.ajax({
             url: "/HomeApi/UpdateTelegramBotMenu",
@@ -32,21 +34,23 @@ function buildSaveMenuData() {
     };
     const formattedData = JSON.stringify(dataMenuList);
 
+    var copiedMessages = JSON.parse(JSON.stringify(messages));
     var saveData = {
         TelegramBotId: $("#TelegramBotId").val(),
         Menu: formattedData,
+        ConstructorMessages: copiedMessages
     };
     return saveData;
 }
 
 // Сбор команд в объект с конкретного меню
 function buildTreeData(contanier) {
-    const authMenuTree = document.getElementById(`${contanier}`);
+    const menuTree = document.getElementById(`${contanier}`);
     const data = {
         Items: []
     };
 
-    const commandNodes = authMenuTree.querySelectorAll('.command-node');
+    const commandNodes = menuTree.querySelectorAll('.command-node');
     const stack = [data];
 
     commandNodes.forEach(commandNode => {
@@ -118,6 +122,32 @@ function buildMenuTree(items, parentGuid, level, contanier) {
             buildMenuTree(item.SubMenu.Items, newGuid, level + 1, contanier);
         }
     }
+}
+
+// Очистка от не актуальных команд
+function clearNotExistMessages() {
+    const actualCommandList = buildValidAllCommandNames();
+    const messageKeys = Object.keys(messages);
+    const filteredKeys = messageKeys.filter(key => actualCommandList.includes(key));
+    const filteredMessages = {};
+    filteredKeys.forEach(key => {
+        filteredMessages[key] = messages[key];
+    });
+    messages = JSON.parse(JSON.stringify(filteredMessages));
+
+}
+
+// Собирает все актуальные имена команд
+function buildValidAllCommandNames() {
+    const data = [];
+
+    const commandNodes = document.querySelectorAll('.command-name');
+
+    commandNodes.forEach(commandName => {
+        data.push(commandName.value);
+    });
+
+    return data;
 }
 
 // Проверяем контейнер меню после регистрации?
@@ -272,4 +302,9 @@ function updateStylesBasedOnMaxLevel(contanier) {
             item.style.marginLeft = `${marginLeft}px`;
         }
     });
+}
+
+// Сброс сообщений
+function resetMessages() {
+    messages = JSON.parse(JSON.stringify(startMenuData.ConstructorMessages));
 }

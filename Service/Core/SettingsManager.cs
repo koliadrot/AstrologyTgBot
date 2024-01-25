@@ -1,5 +1,6 @@
 ﻿using Data.Core;
 using Data.Core.Models;
+using Microsoft.EntityFrameworkCore;
 using Service.Abstract;
 using Service.Enums;
 using Service.Extensions;
@@ -104,6 +105,7 @@ namespace Service.Core
                 }
 
                 var messages = new List<TelegramBotParamMessageViewModel>();
+                var constructorMessages = new Dictionary<string, string>();
 
                 foreach (var message in telegramParams.Messages)
                 {
@@ -116,26 +118,32 @@ namespace Service.Core
                         MessageValue = message.MessageValue,
                         MessageValueDefault = message.MessageValueDefault,
                         IsButton = message.IsButton,
-
+                        IsSystem = message.IsSystem
                     };
                     messages.Add(newMessage);
+                    if (!message.IsSystem)
+                    {
+                        constructorMessages.Add(message.MessageName, message.MessageValue);
+                    }
                 }
 
                 viewModel = new TelegramBotParamsViewModel
                 {
                     TelegramBotId = telegramParams.TelegramBotId,
                     BotName = telegramParams.BotName,
+                    BotAbout = telegramParams.BotAbout,
+                    BotDescription = telegramParams.BotDescription,
                     BotUserName = telegramParams.BotUserName,
                     TokenApi = telegramParams.TokenApi,
                     WebHookUrl = telegramParams.WebHookUrl,
                     TosUrl = telegramParams.TosUrl,
-                    AcceptElectronicReceipts = telegramParams.AcceptElectronicReceipts,
-                    AcceptPromotionsBySms = telegramParams.AcceptPromotionsBySms,
                     BotCommands = botCommands,
                     RegisterConditions = registerConditions,
                     Messages = messages,
                     HelloText = telegramParams.HelloText,
                     Menu = telegramParams.Menu,
+                    LastStatus = telegramParams.LastStatus,
+                    ConstructorMessages = constructorMessages
                 };
             }
             else
@@ -144,6 +152,16 @@ namespace Service.Core
             }
 
             return viewModel;
+        }
+
+        public void SaveStatusTelegramBot(TelegramBotStatusType status, int id = 0)
+        {
+            var telegramParams = id == 0 ? _bonusDbContext.TelegramParams.FirstOrDefault() : _bonusDbContext.TelegramParams.FirstOrDefault(x => x.TelegramBotId == id);
+            if (telegramParams != null)
+            {
+                telegramParams.LastStatus = status.ToString();
+            }
+            _bonusDbContext.SaveChanges();
         }
 
         public async Task UpdateTelegramBot(TelegramBotParamsViewModel viewModel, bool isSuperAdmin)
@@ -155,12 +173,12 @@ namespace Service.Core
                 {
                     TelegramBotId = viewModel.TelegramBotId,
                     BotName = viewModel.BotName,
+                    BotAbout = viewModel.BotAbout,
+                    BotDescription = viewModel.BotDescription,
                     BotUserName = viewModel.BotUserName,
                     TokenApi = viewModel.TokenApi,
                     WebHookUrl = viewModel.WebHookUrl,
                     TosUrl = viewModel.TosUrl,
-                    AcceptElectronicReceipts = viewModel.AcceptElectronicReceipts,
-                    AcceptPromotionsBySms = viewModel.AcceptPromotionsBySms,
                     HelloText = viewModel.HelloText,
                 };
                 _bonusDbContext.TelegramParams.Add(entity);
@@ -169,6 +187,8 @@ namespace Service.Core
             {
                 entity.TelegramBotId = viewModel.TelegramBotId;
                 entity.BotName = viewModel.BotName;
+                entity.BotAbout = viewModel.BotAbout;
+                entity.BotDescription = viewModel.BotDescription;
                 if (isSuperAdmin)
                 {
                     entity.BotUserName = viewModel.BotUserName;
@@ -176,8 +196,6 @@ namespace Service.Core
                     entity.WebHookUrl = viewModel.WebHookUrl;
                 }
                 entity.TosUrl = viewModel.TosUrl;
-                entity.AcceptPromotionsBySms = viewModel.AcceptPromotionsBySms;
-                entity.AcceptElectronicReceipts = viewModel.AcceptElectronicReceipts;
                 entity.HelloText = viewModel.HelloText;
             }
             await _bonusDbContext.SaveChangesAsync();
@@ -189,6 +207,64 @@ namespace Service.Core
             if (entity != null)
             {
                 entity.Menu = viewModel.Menu;
+                if (viewModel.ConstructorMessages.Any())
+                {
+
+                    foreach (var item in _bonusDbContext.TelegramBotParamMessages.Where(x => !x.IsSystem))
+                    {
+                        if (!viewModel.ConstructorMessages.ContainsKey(item.MessageName))
+                        {
+                            _bonusDbContext.TelegramBotParamMessages.Remove(item);
+                        }
+                    }
+                    foreach (var item in viewModel.ConstructorMessages)
+                    {
+                        TelegramBotParamMessage message = await _bonusDbContext.TelegramBotParamMessages.Where(x => !x.IsSystem).FirstOrDefaultAsync(x => x.MessageName == item.Key);
+                        if (message == null)
+                        {
+                            TelegramBotParamMessageViewModel messageView = new TelegramBotParamMessageViewModel()
+                            {
+                                TelegramBotId = viewModel.TelegramBotId,
+                                MessageName = item.Key,
+                                MessageDescription = item.Key,
+                                MessageValue = item.Value,
+                                MessageValueDefault = item.Value
+                            };
+                            await CreateTelegramBotMessage(messageView);
+                        }
+                        else
+                        {
+                            message.MessageValue = item.Value;
+                            message.MessageValueDefault = item.Value;
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var item in _bonusDbContext.TelegramBotParamMessages.Where(x => !x.IsSystem))
+                    {
+                        _bonusDbContext.TelegramBotParamMessages.Remove(item);
+                    }
+                }
+                await _bonusDbContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task CreateTelegramBotMessage(TelegramBotParamMessageViewModel viewModel)
+        {
+            TelegramBotParamMessage message = _bonusDbContext.TelegramBotParamMessages.Find(viewModel.MessageId);
+            var telegramBot = _bonusDbContext.TelegramParams.FirstOrDefault(x => x.TelegramBotId == viewModel.TelegramBotId);
+            if (message == null && telegramBot != null)
+            {
+                message = new TelegramBotParamMessage()
+                {
+                    TelegramBotId = telegramBot.TelegramBotId,
+                    MessageName = viewModel.MessageName,
+                    MessageValue = viewModel.MessageValue,
+                    MessageDescription = viewModel.MessageDescription,
+                    MessageValueDefault = viewModel.MessageValueDefault
+                };
+                _bonusDbContext.TelegramBotParamMessages.Add(message);
                 await _bonusDbContext.SaveChangesAsync();
             }
         }

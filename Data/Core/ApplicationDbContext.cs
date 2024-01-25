@@ -9,10 +9,6 @@
 
     public class ApplicationDbContext : DbContext
     {
-        //public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-
-        public ApplicationDbContext() { }
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -36,5 +32,9 @@
         public DbSet<TelegramBotRegisterCondition> TelegramBotRegisterConditions { get; set; }
         public DbSet<TelegramBotParamMessage> TelegramBotParamMessages { get; set; }
         public DbSet<ApiAccessToken> ApiAccessTokens { get; set; }
+        public DbSet<Client> Clients { get; set; }
+        public DbSet<ClientMediaInfo> ClientMediaInfos { get; set; }
+        public DbSet<ClientPhotoInfo> ClientPhotoInfos { get; set; }
+        public DbSet<ClientVideoInfo> ClientVideoInfos { get; set; }
     }
 }

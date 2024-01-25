@@ -39,5 +39,10 @@
         /// Данное сообщение является кнопкой под строкой ввода в чате телеграмма
         /// </summary>
         public bool IsButton { get; set; }
+
+        /// <summary>
+        /// Системное сообщение
+        /// </summary>
+        public bool IsSystem { get; internal set; }
     }
 }

@@ -41,6 +41,36 @@
                 </div>
             </div>
         </div>
+        <div class="col-xl-9 col-md pl-1">
+            <div class="row">
+                <div class="col-md-6 col-xl-4">
+                    <div class="form-group">
+                        <label for="BotAbout">Краткое описание:</label>
+                        <span id="questionBotAbout" class="fa-light fa-circle-question ml-2" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <div class="col pl-2">
+                    <div class="form-group">
+                        @(Html.Kendo().TextAreaFor(m => m.BotAbout).Value(Model.BotAbout).HtmlAttributes(new { id = "BotAbout", @class = "form-control", @style = "resize: vertical !important" }))
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-9 col-md pl-1">
+            <div class="row">
+                <div class="col-md-6 col-xl-4">
+                    <div class="form-group">
+                        <label for="BotDescription">Описание:</label>
+                        <span id="questionBotDescription" class="fa-light fa-circle-question ml-2" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <div class="col pl-2">
+                    <div class="form-group">
+                        @(Html.Kendo().TextAreaFor(m => m.BotDescription).Value(Model.BotDescription).HtmlAttributes(new { id = "BotDescription", @class = "form-control", @style = "resize: vertical !important" }))
+                    </div>
+                </div>
+            </div>
+        </div>
         @if ((bool)ViewBag.IsSuperAdmin)
         {
             <div class="col-xl-9 col-md pl-1">
@@ -127,38 +157,6 @@
             <div class="row">
                 <div class="col-md-6 col-xl-4 col-10 col-sm-6 pr-0">
                     <div class="form-group">
-                        <label>Предлагать рассылку акций:</label>
-                        <span id="questionAcceptPromotionsBySms" class="fa-light fa-circle-question mt-1 ml-2" aria-hidden="true"></span>
-                    </div>
-                </div>
-                <div class="col-md col-1 pl-2">
-                    <div class="form-group">
-                        @(Html.Kendo().CheckBoxFor(m => m.AcceptPromotionsBySms).HtmlAttributes(new { id = "AcceptPromotionsBySms", @class = "form-check-input" }))
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        @*NOTE: Пока не реализовано условие цифровых чеков*@
-        @*<div class="col-xl-9 col-md pl-1">
-        <div class="row">
-        <div class="col-md-6 col-xl-4 col-10 col-sm-6 pr-0">
-        <div class="form-group">
-        <label>Предлагать цифровые чеки:</label>
-        <span id="questionAcceptElectronicReceipts" class="fa-light fa-circle-question mt-1 ml-2" aria-hidden="true"></span>
-        </div>
-        </div>
-        <div class="col-md col-1 pl-2">
-        <div class="form-group">
-        @(Html.Kendo().CheckBoxFor(m => m.AcceptElectronicReceipts).Value(Model.AcceptElectronicReceipts.ToString()).HtmlAttributes(new { id = "AcceptElectronicReceipts", @class = "form-check-input" }))
-        </div>
-        </div>
-        </div>
-        </div>*@
-        <div class="col-xl-9 col-md pl-1">
-            <div class="row">
-                <div class="col-md-6 col-xl-4 col-10 col-sm-6 pr-0">
-                    <div class="form-group">
                         @(Html.Kendo().Button().Name("saveButton").Content("Сохранить").HtmlAttributes(new { @class = "k-button" }).Events(events => events.Click("onSaveButtonClick")))
                     </div>
                 </div>
@@ -177,13 +175,18 @@
 
 
 <script>
+    var isStarted = @Html.Raw(JsonSerializer.Serialize(ViewBag.IsStarted));
+    var isManulStopped = @Html.Raw(JsonSerializer.Serialize(ViewBag.IsManulStopped));
+    var isAccessible = @Html.Raw(JsonSerializer.Serialize(ViewBag.IsAccessible));
+    var isSuccessServer = @Html.Raw(JsonSerializer.Serialize(ViewBag.IsSuccessServer));
+
     $(document).ready(function () {
+
         initHelpTooltips();
         initStartData();
         updateSaveButton();
         onHandlerChangeData();
         checkSaveData();
-        let isStarted = @Html.Raw(JsonSerializer.Serialize(ViewBag.IsStarted));
         updateSwitchElements(isStarted);
     });
 
@@ -191,6 +194,14 @@
     function initHelpTooltips() {
         $("#questionBotName").kendoTooltip({
             content: "Имя бота, которое генерируется у BotFather в телеграмм аккаунте.<br>Слишком часто менять имя нельзя!",
+            position: "right"
+        })
+        $("#questionBotAbout").kendoTooltip({
+            content: "Краткое описание в информации бота.<br>Слишком часто менять краткое описание нельзя!",
+            position: "right"
+        })
+        $("#questionBotDescription").kendoTooltip({
+            content: "Описание бота, которое отображется при первом знакомстве с пользователем.<br>Слишком часто менять описание нельзя!",
             position: "right"
         })
         $("#questionBotUserName").kendoTooltip({
@@ -211,14 +222,6 @@
             content: "Ссылка или текст с условиями использования программы<br>и обработки персональных данных",
             position: "right"
         })
-        $("#questionAcceptPromotionsBySms").kendoTooltip({
-            content: "При регистрации клиента запрашивать согласие на<br>рассылку персональных скидок, акций и распродаж",
-            position: "right"
-        })
-        $("#questionAcceptElectronicReceipts").kendoTooltip({
-            content: "Предлагать ли при регистрации клиента согласится<br>на рассылку электронных чеков на почту",
-            position: "right"
-        })
         $("#questionHelloText").kendoTooltip({
             content: "Текст приветствия телеграмм бота при первом начале разговора",
             position: "right"
@@ -227,7 +230,7 @@
 
     // Обработчик события при измении параметров
     function onHandlerChangeData() {
-        $("#BotName,#BotUserName, #TokenAPI, #WebHookUrl, #TosUrl, #HelloText, #AcceptPromotionsBySms, #AcceptElectronicReceipts").on("change", function () {
+        $("#BotName,#BotAbout,#BotDescription,#BotUserName, #TokenAPI, #WebHookUrl, #TosUrl, #HelloText").on("change", function () {
             updateSaveButton();
         });
     }
@@ -248,12 +251,12 @@
     }
 
     // Обновление состояния всех элементов вкл/выкл
-    function updateSwitchElements(isStarted) {
+    function updateSwitchElements(state) {
         var startButton = $("#startButton");
         var stopButton = $("#stopButton");
         var resetButton = $("#resetButton");
-        updateStatusIndicator(isStarted);
-        if (isStarted) {
+        updateStatusIndicator(state);
+        if (state) {
             resetButton.removeClass("hidden");
             startButton.addClass("hidden");
             stopButton.removeClass("hidden");
@@ -273,15 +276,27 @@
     }
 
     // Обновление индикатора статуса
-    function updateStatusIndicator(isStarted) {
+    function updateStatusIndicator(state) {
         var statusIndicator = $("#statusIndicator");
 
-        if (isStarted) {
+        if (!isAccessible) {
+            location.reload();
+        }
+        else if (!isSuccessServer) {
             statusIndicator.removeClass("status-indicator-stopped");
-            statusIndicator.addClass("status-indicator-started");
-        } else {
+            statusIndicator.removeClass("status-indicator-started");
+            statusIndicator.addClass("status-indicator-failed");
+        }
+        else if (isManulStopped) {
+
+            statusIndicator.removeClass("status-indicator-failed");
             statusIndicator.removeClass("status-indicator-started");
             statusIndicator.addClass("status-indicator-stopped");
+        }
+        else if (state) {
+            statusIndicator.removeClass("status-indicator-failed");
+            statusIndicator.removeClass("status-indicator-stopped");
+            statusIndicator.addClass("status-indicator-started");
         }
     }
 
@@ -293,7 +308,8 @@
             await switchOnOffTelegramBot(postStop, '@Model.TelegramBotId');
         }
         const result = await saveTelegramBotParams();
-        var state = startSaveData.WebHookUrl ? result.success : true;
+        updateStatusData(result);
+        var state = startSaveData.WebHookUrl ? result.success && result.isStarted:true;
         var message = state ? "Бот обновлен" : "Возникли неполадки";
         var typeMessage = state ? "success" : "error";
         showNotification(message, typeMessage);
@@ -307,7 +323,8 @@
         showLoader(true);
         var post = "@Url.Action("StartTelegramBot", "HomeApi")";
         const result = await switchOnOffTelegramBot(post, '@Model.TelegramBotId');
-        var state = result.success && result.isStarted;
+        updateStatusData(result);
+        var state = isSuccessServer && isStarted;
         var message = state ? "Бот запущен успешно" : "Возникли неполадки";
         var typeMessage = state ? "success" : "error";
         showNotification(message, typeMessage);
@@ -320,11 +337,12 @@
         showLoader(true);
         var post = "@Url.Action("StopTelegramBot", "HomeApi")";
         const result = await switchOnOffTelegramBot(post, '@Model.TelegramBotId');
-        var state = result.success && !result.isStarted;
+        updateStatusData(result);
+        var state = isSuccessServer && !isStarted;
         var message = state ? "Бот остановлен успешно" : "Возникли неполадки";
         var typeMessage = state ? "success" : "error";
         showNotification(message, typeMessage);
-        updateSwitchElements(result.success && result.isStarted);
+        updateSwitchElements(isSuccessServer && isStarted);
         showLoader(false);
     }
 
@@ -333,7 +351,7 @@
         showLoader(true);
         var post = "@Url.Action("ResetTelegramBot", "HomeApi")";
         const result = await switchOnOffTelegramBot(post, '@Model.TelegramBotId');
-        var state = result.success && result.isStarted;
+        var state = isSuccessServer && isStarted;
         var message = state ? "Бот перезагружен успешно" : "Возникли неполадки";
         var typeMessage = state ? "success" : "error";
         showNotification(message, typeMessage);
@@ -357,6 +375,14 @@
             alert(message);
         }
     }
+
+    // Обновляет состояния
+    function updateStatusData(result) {
+        isStarted = result.isStarted;
+        isManulStopped = result.isManulStopped;
+        isAccessible = result.isAccessible;
+        isSuccessServer = result.success;
+    }
 </script>
 
 <style>
@@ -373,6 +399,10 @@
     }
 
     .status-indicator-stopped {
+        background-color: orange;
+    }
+
+    .status-indicator-failed {
         background-color: red;
     }
 

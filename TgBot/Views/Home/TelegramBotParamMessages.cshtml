@@ -13,8 +13,9 @@
 <div id="telegramBotMessageEdit">
     <div class="tabs-container">
         <ul class="nav nav-tabs bar_tabs">
-            <li class="nav-item"><a data-toggle="tab" href="#_pill1" class="nav-link active">Сообщения</a></li>
+            <li class="nav-item"><a data-toggle="tab" href="#_pill1" class="nav-link active">Системные</a></li>
             <li class="nav-item"><a data-toggle="tab" href="#_pill2" class="nav-link">Кнопки</a></li>
+            <li class="nav-item"><a data-toggle="tab" href="#_pill3" class="nav-link">Пользовательские</a></li>
         </ul>
     </div>
     <div class="tab-content">
@@ -23,7 +24,6 @@
                 @(Html.Kendo().Grid<TelegramBotParamMessageViewModel>().Name("telegramBotMessages")
                     .Columns(c =>
                     {
-
                         c.Bound(o => o.MessageDescription).Title("Название").Width(250);
                         c.Bound(o => o.MessageValue).Title("Значение").Encoded(false).Width(400);
                         c.Command(command =>
@@ -37,7 +37,17 @@
                         events.Edit("onGridEdit");
                         events.Save("onGridMessageChange");
                     })
+                    .ToolBar(tb =>
+                    {
+                        tb.Excel().Text(" ").HtmlAttributes(new { Title = "Экспорт в excel" });
+                        tb.Search();
+                    })
                     .Editable(editable => editable.Mode(GridEditMode.InLine))
+                    .Pageable(pageable => pageable.PageSizes(new int[] { 5, 10, 20, 50, 100 }))
+                    .Excel(excel => excel
+                    .FileName("TelegramBotMessages.xlsx")
+                    .AllPages(true)
+                    )
                     .DataSource(d => d
                     .Ajax()
                     .Sort(sort => sort.Add("MessageId").Ascending())
@@ -51,8 +61,6 @@
                     .ServerOperation(false)
                     .PageSize(10)
                     )
-                    .Pageable()
-
                     )
                 <div style="clear:both"></div>
             </div>
@@ -76,7 +84,17 @@
                         events.Edit("onGridEdit");
                         events.Save("onGridButtonChange");
                     })
+                    .ToolBar(tb =>
+                    {
+                        tb.Excel().Text(" ").HtmlAttributes(new { Title = "Экспорт в excel" });
+                        tb.Search();
+                    })
                     .Editable(editable => editable.Mode(GridEditMode.InLine))
+                    .Pageable(pageable => pageable.PageSizes(new int[] { 5, 10, 20, 50, 100 }))
+                    .Excel(excel => excel
+                    .FileName("TelegramBotButtons.xlsx")
+                    .AllPages(true)
+                    )
                     .DataSource(d => d
                     .Ajax()
                     .Sort(sort => sort.Add("MessageId").Ascending())
@@ -90,8 +108,53 @@
                     .ServerOperation(false)
                     .PageSize(10)
                     )
-                    .Pageable()
+                    )
+                <div style="clear:both"></div>
+            </div>
+        </div>
+        <div id="_pill3" class="tab-pane fadeIn">
+            <div class="well">
+                @(Html.Kendo().Grid<TelegramBotParamMessageViewModel>().Name("telegramBotUserMessages")
+                    .Columns(c =>
+                    {
 
+                        c.Bound(o => o.MessageDescription).Title("Название").Width(250);
+                        c.Bound(o => o.MessageValue).Title("Значение").Width(400);
+                        c.Command(command =>
+                        {
+                            command.Edit().Text(" ").HtmlAttributes(new { @title = "Редактировать" });
+                            command.Custom(" ").IconClass("k-icon k-i-reset k-button-icon").Visible("onCheckDeleteVisibility").HtmlAttributes(new { @class = "k-button k-button-md k-button-rectangle k-rounded-md k-button-solid k-button-solid-base", @title = "Сброс кнопки по умолчанию", @onclick = "onResetUserMessageButton(this)" });
+                        }).Width(50);
+                    })
+                    .Events(events =>
+                    {
+                        events.Edit("onGridEdit");
+                        events.Save("onGridUserMessageChange");
+                    })
+                    .ToolBar(tb =>
+                    {
+                        tb.Excel().Text(" ").HtmlAttributes(new { Title = "Экспорт в excel" });
+                        tb.Search();
+                    })
+                    .Editable(editable => editable.Mode(GridEditMode.InLine))
+                    .Pageable(pageable => pageable.PageSizes(new int[] { 5, 10, 20, 50, 100 }))
+                    .Excel(excel => excel
+                    .FileName("TelegramBotUserMessages.xlsx")
+                    .AllPages(true)
+                    )
+                    .DataSource(d => d
+                    .Ajax()
+                    .Sort(sort => sort.Add("MessageId").Ascending())
+                    .Read(read => read.Action("GetTelegramBotParamUserMessages", "HomeApi"))
+                    .Update(update => update.Action("UpdateTelegramBotMessage", "HomeApi").Type(HttpVerbs.Post))
+                    .Model(model =>
+                    {
+                        model.Id(x => x.MessageId);
+                        model.Field(x => x.MessageDescription).Editable(false);
+                    })
+                    .ServerOperation(false)
+                    .PageSize(10)
+                    )
                     )
                 <div style="clear:both"></div>
             </div>
@@ -126,6 +189,26 @@
         }
     }
 
+    function onGridUserMessageChange(e) {
+        var grid = $("#telegramBotUserMessages").data("kendoGrid");
+        var dataItem = grid.dataItem($(e.container).closest("tr"));
+
+        if (dataItem) {
+            dataItem.set("MessageValue", e.container.find("#MessageValueArea").val());
+            grid.saveChanges();
+        }
+    }
+
+
+    function onResetUserMessageButton(e) {
+        var grid = $("#telegramBotUserMessages").data("kendoGrid");
+        var dataItem = grid.dataItem($(e).closest("tr"));
+        if (dataItem) {
+            dataItem.set("MessageValue", dataItem.MessageValueDefault);
+            grid.saveChanges();
+        }
+    }
+
 
 
     function onGridButtonChange(e) {
@@ -151,16 +234,25 @@
         return dataItem.MessageValue !== dataItem.MessageValueDefault;
     }
 
+
     // При загрузке страницы проверяем текущий хештег и показываем соответствующую вкладку
     $(document).ready(function () {
+        updateTab();
+    });
+
+    // Обновляет вкладки подстраниц
+    function updateTab() {
         var hash = window.location.hash;
         if (hash === '#_pill1') {
             showTab('_pill1');
         } else if (hash === '#_pill2') {
             showTab('_pill2');
         }
-    });
-
+        else if (hash === '#_pill3') {
+            showTab('_pill3');
+        }
+    }
+    
     // Функция для отображения вкладки по идентификатору
     function showTab(tabId) {
         $('.tab-pane').removeClass('active');
@@ -172,12 +264,7 @@
 
     // Отслеживаем изменения хештега и показываем соответствующую вкладку
     $(window).on('hashchange', function () {
-        var hash = window.location.hash;
-        if (hash === '#_pill1') {
-            showTab('_pill1');
-        } else if (hash === '#_pill2') {
-            showTab('_pill2');
-        }
+        updateTab();
     });
 </script>
 
@@ -207,4 +294,8 @@
         .nav-tabs .nav-item {
             white-space: nowrap;
         }
+
+    .k-pager-md .k-pager-info, .k-pager-sm .k-pager-info, .k-pager-sm .k-pager-numbers, .k-pager-sm .k-pager-sizes {
+        display: flex;
+    }
 </style>

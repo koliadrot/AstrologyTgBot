@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Newtonsoft.Json.Serialization;
+using NLog;
 using Service.Abstract;
 using Service.Core;
 using Service.Core.TelegramBot;
@@ -14,15 +15,20 @@ builder.Services.AddTransient<IUserManager, UserManager>();
 builder.Services.AddTransient<IMobileManager, MobileManager>();
 builder.Services.AddTransient<ISettingsManager, SettingsManager>();
 builder.Services.AddTransient<ICustomerManager, CustomerManager>();
+NLog.ILogger logger = LogManager.GetLogger("default");
+builder.Services.AddSingleton(logger);
 
 // Регистрация AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Телеграм бот
-var telegramBot = new TelegramBotManager();
 var updateDistributor = new UpdateDistributor();
-builder.Services.AddSingleton(updateDistributor);
+var telegramBot = new TelegramBotManager();
+telegramBot.Logger = logger;
+telegramBot.Start();
+
 //NOTE: регистрация телеграм менеджера в DI для лаконичности
+builder.Services.AddSingleton(updateDistributor);
 builder.Services.AddSingleton(telegramBot);
 
 builder.Services.AddAuthentication(auth =>

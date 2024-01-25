@@ -16,7 +16,7 @@ namespace Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.2")
+                .HasAnnotation("ProductVersion", "7.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Data.Core.Models.ApiAccessToken", b =>
@@ -37,6 +37,178 @@ namespace Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ApiAccessTokens");
+                });
+
+            modelBuilder.Entity("Data.Core.Models.Client", b =>
+                {
+                    b.Property<int>("ClientId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("ClientId")
+                        .HasColumnOrder(1);
+
+                    b.Property<string>("AboutMe")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("BirthCity")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("BirthCoord")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("BirthGender")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("Birthday")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("FirstName")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<string>("SearchAge")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SearchCity")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SearchCoord")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SearchGender")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SearchGoal")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TelegramId")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("ClientId");
+
+                    b.ToTable("Clients");
+                });
+
+            modelBuilder.Entity("Data.Core.Models.ClientMediaInfo", b =>
+                {
+                    b.Property<int>("ClientMediaInfoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClientMediaInfoId");
+
+                    b.HasIndex("ClientId")
+                        .IsUnique();
+
+                    b.ToTable("ClientMediaInfos");
+                });
+
+            modelBuilder.Entity("Data.Core.Models.ClientPhotoInfo", b =>
+                {
+                    b.Property<int>("ClientPhotoInfoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClientMediaInfoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FileId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<long?>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileUniqueId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MediaGroupId")
+                        .HasColumnType("longtext");
+
+                    b.Property<byte[]>("Photo")
+                        .HasColumnType("longblob");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClientPhotoInfoId");
+
+                    b.HasIndex("ClientMediaInfoId");
+
+                    b.ToTable("ClientPhotoInfos");
+                });
+
+            modelBuilder.Entity("Data.Core.Models.ClientVideoInfo", b =>
+                {
+                    b.Property<int>("ClientVideoInfoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClientMediaInfoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Duration")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FileId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<long?>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileUniqueId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MediaGroupId")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("MimeType")
+                        .HasColumnType("longtext");
+
+                    b.Property<byte[]>("Thumbnail")
+                        .HasColumnType("longblob");
+
+                    b.Property<string>("ThumbnailFileId")
+                        .HasColumnType("longtext");
+
+                    b.Property<long?>("ThumbnailFileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ThumbnailFileUniqueId")
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("ThumbnailHeight")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ThumbnailWidth")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("Video")
+                        .HasColumnType("longblob");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClientVideoInfoId");
+
+                    b.HasIndex("ClientMediaInfoId");
+
+                    b.ToTable("ClientVideoInfos");
                 });
 
             modelBuilder.Entity("Data.Core.Models.TelegramBotCommand", b =>
@@ -94,6 +266,9 @@ namespace Data.Migrations
                     b.Property<bool>("IsButton")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("MessageDescription")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -129,38 +304,35 @@ namespace Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<bool>("AcceptElectronicReceipts")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<string>("BotAbout")
+                        .HasColumnType("longtext");
 
-                    b.Property<bool>("AcceptPromotionsBySms")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<string>("BotDescription")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("BotName")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("BotUserName")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("HelloText")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("LastStatus")
                         .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Menu")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("TokenApi")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("TosUrl")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("WebHookUrl")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("TelegramBotId");
@@ -250,6 +422,39 @@ namespace Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Data.Core.Models.ClientMediaInfo", b =>
+                {
+                    b.HasOne("Data.Core.Models.Client", "Client")
+                        .WithOne("ClientMediaInfo")
+                        .HasForeignKey("Data.Core.Models.ClientMediaInfo", "ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("Data.Core.Models.ClientPhotoInfo", b =>
+                {
+                    b.HasOne("Data.Core.Models.ClientMediaInfo", "ClientMediaInfo")
+                        .WithMany("ClientPhotoInfos")
+                        .HasForeignKey("ClientMediaInfoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ClientMediaInfo");
+                });
+
+            modelBuilder.Entity("Data.Core.Models.ClientVideoInfo", b =>
+                {
+                    b.HasOne("Data.Core.Models.ClientMediaInfo", "ClientMediaInfo")
+                        .WithMany("ClientVideoInfos")
+                        .HasForeignKey("ClientMediaInfoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ClientMediaInfo");
+                });
+
             modelBuilder.Entity("Data.Core.Models.TelegramBotCommand", b =>
                 {
                     b.HasOne("Data.Core.Models.TelegramBotParams", null)
@@ -269,6 +474,19 @@ namespace Data.Migrations
                     b.HasOne("Data.Core.Models.TelegramBotParams", null)
                         .WithMany("BotRegisterConditions")
                         .HasForeignKey("TelegramBotParamsTelegramBotId");
+                });
+
+            modelBuilder.Entity("Data.Core.Models.Client", b =>
+                {
+                    b.Navigation("ClientMediaInfo")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Data.Core.Models.ClientMediaInfo", b =>
+                {
+                    b.Navigation("ClientPhotoInfos");
+
+                    b.Navigation("ClientVideoInfos");
                 });
 
             modelBuilder.Entity("Data.Core.Models.TelegramBotParams", b =>

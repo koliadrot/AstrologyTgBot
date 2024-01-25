@@ -120,5 +120,20 @@
         }
 
         public static string ToStringFormatNumber(this int number) => number.ToString(FORMAT_INTEGER_NUMBER);
+
+        /// <summary>
+        /// Защищенный способ получения элемента из массива строк
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public static string? GetStringAtIndex(this List<string> source, int index, bool isTrim = true) => index >= 0 && index < source.Count ? source[index] : null;
+
+
+        /// <summary>
+        /// Исправная ли ссылка
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsValidLink(this string url) => Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
     }
 }

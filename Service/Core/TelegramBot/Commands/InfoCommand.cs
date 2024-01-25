@@ -1,13 +1,12 @@
 ﻿using Service.Abstract.TelegramBot;
 using Service.Enums;
-using System;
-using System.Threading.Tasks;
+using Service.Extensions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Service.Core.TelegramBot.Commands
 {
-    /// <summary>
+    // <summary>
     /// Команда-шаблон информации
     /// </summary>
     public class InfoCommand : ICommand
@@ -23,31 +22,45 @@ namespace Service.Core.TelegramBot.Commands
 
         public bool IsStartMenu => false;
 
+        /// <summary>
+        /// Наполение информации
+        /// </summary>
+        public string Info { get; private set; } = string.Empty;
+
         public TelegramBotCommandType CommandType => TelegramBotCommandType.Info;
 
-        private string _info = string.Empty;
         private readonly DataManager _dataManager;
+        private readonly Dictionary<string, string> _messages;
 
         public InfoCommand(DataManager dataManager, string info)
         {
             _dataManager = dataManager;
-            _info = info;
+            Info = info;
+            _messages = _dataManager.GetData<CommandExecutor>().Messages;
+        }
+
+        public async Task SendStartMessage(Update update)
+        {
+            if (_messages.TryGetValue(ShortDescription, out string startMessage))
+            {
+                long chatId = Get.GetChatId(update);
+                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, startMessage);
+            }
         }
 
         public async Task Execute(Update update, string[] arg = null)
         {
             long chatId = Get.GetChatId(update);
-            if (IsValidLink(_info))
+            await SendStartMessage(update);
+            if (Info.IsValidLink())
             {
-                var keyboard = new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl(ShortDescription, _info));
-                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Description, replyMarkup: keyboard);
+                var replyKeyboard = new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl(_messages[ReplyButton.GO_TO_LINK], Info));
+                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Description.IsNull() ? ShortDescription : Description, replyMarkup: replyKeyboard);
             }
             else
             {
-                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, _info);
+                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Info);
             }
         }
-
-        private bool IsValidLink(string link) => Uri.TryCreate(link, UriKind.Absolute, out Uri uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
     }
 }

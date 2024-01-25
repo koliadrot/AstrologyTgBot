@@ -12,5 +12,6 @@
         public string MessageValue { get; set; }
         public string MessageValueDefault { get; set; }
         public bool IsButton { get; set; }
+        public bool IsSystem { get; set; }
     }
 }

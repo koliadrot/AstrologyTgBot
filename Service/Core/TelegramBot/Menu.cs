@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Service.Core.TelegramBot
+﻿namespace Service.Core.TelegramBot
 {
 
     /// <summary>
