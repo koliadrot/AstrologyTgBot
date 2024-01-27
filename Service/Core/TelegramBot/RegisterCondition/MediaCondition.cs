@@ -46,7 +46,7 @@
         private float _currentDelay;
         private bool _isStartProcessing = false;
 
-        private const float START_DELAY = 3f;
+        private const float START_DELAY = 10f;
         private const float MAX_DELAY = 15f;
         private const int LIMIT_VIDEO_DURATION = 16;
         private const int LIMIT_MEDIA_COUNT = 10;
@@ -80,7 +80,7 @@
                     inlineKeyboardButtons.Add(new KeyboardButton(_messages[ReplyButton.SKIP]));
                 }
                 inlineKeyboardButtons.Add(new KeyboardButton(_messages[ReplyButton.Avatar]));
-                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.ENTER_MEDIA_INFO], new Dictionary<string, string>() { { Promt.VIDEO, LIMIT_VIDEO_DURATION.ToString() } }), replyKeyboard);
+                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.ENTER_MEDIA_INFO], new Dictionary<string, string>() { { Promt.DURATION, LIMIT_VIDEO_DURATION.ToString() } }), replyKeyboard);
                 isStarted = true;
                 invalidVideoCount = 0;
                 SetDelay(START_DELAY, true);
@@ -104,7 +104,7 @@
             else if (messageText == _messages[ReplyButton.Avatar])
             {
                 var photos = await _dataManager.GetData<TelegramBotManager>().GetUserProfilePhoto(userId);
-                if (photos.TotalCount > 0)
+                if (photos != null && photos.TotalCount > 0)
                 {
                     var selectPhoto = photos.Photos[0].LastOrDefault();
                     var photoBytes = await _dataManager.GetData<TelegramBotManager>().DownloadPhotoById(selectPhoto.FileId);
@@ -119,6 +119,10 @@
                     });
                     _media.ClientPhotoInfos = _photos;
                     isDone = true;
+                }
+                else
+                {
+                    await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.EMPTY_AVATAR_INFO], new Dictionary<string, string>() { { Promt.DURATION, LIMIT_VIDEO_DURATION.ToString() } }));
                 }
             }
             else if (update.Message.Photo != null)
@@ -194,7 +198,7 @@
                     }
                     else
                     {
-                        await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.VERY_LONG_VIDEO], new Dictionary<string, string>() { { Promt.VIDEO, invalidVideoCount.ToString() } }));
+                        await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.VERY_LONG_VIDEO], new Dictionary<string, string>() { { Promt.DURATION, LIMIT_VIDEO_DURATION.ToString() } }));
                     }
 
                 }
@@ -265,7 +269,7 @@
             }
             else
             {
-                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.WRONG_LOAD_VIDEO], new Dictionary<string, string>() { { Promt.VIDEO, invalidVideoCount.ToString() } }));
+                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.WRONG_LOAD_VIDEO], new Dictionary<string, string>() { { Promt.VIDEO, invalidVideoCount.ToString() }, { Promt.DURATION, LIMIT_VIDEO_DURATION.ToString() } }));
             }
         }
 
@@ -315,7 +319,7 @@
                 {
                     inlineKeyboardButtons.Add(new KeyboardButton(miniCommand));
                 }
-                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.WRONG_LOAD_VIDEO], new Dictionary<string, string>() { { Promt.VIDEO, invalidVideoCount.ToString() } }), replyMarkup: replyKeyboard);
+                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.WRONG_LOAD_VIDEO], new Dictionary<string, string>() { { Promt.VIDEO, invalidVideoCount.ToString() }, { Promt.DURATION, LIMIT_VIDEO_DURATION.ToString() } }), replyMarkup: replyKeyboard);
                 StopCheckerMediaGroup();
             }
             else

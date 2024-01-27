@@ -136,6 +136,11 @@
         public const string WRONG_MEDIA_INFO = "wrongMediaInfo";
 
         /// <summary>
+        /// Пустая аватарка
+        /// </summary>
+        public const string EMPTY_AVATAR_INFO = "emptyAvatarInfo";
+
+        /// <summary>
         /// Большое кол-во медиа файлов
         /// </summary>
         public const string VERY_MANY_MEDIA_INFO = "veryManyMediaInfo";
@@ -271,6 +276,11 @@
         /// Видео
         /// </summary>
         public const string VIDEO = "video";
+
+        /// <summary>
+        /// Длительность
+        /// </summary>
+        public const string DURATION = "duration";
 
         /// <summary>
         /// Медиа

@@ -1,9 +1,10 @@
 ﻿namespace Service.Support
 {
     using Service.Extensions;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Formats.Jpeg;
+    using SixLabors.ImageSharp.PixelFormats;
     using System;
-    using System.Drawing;
-    using System.Drawing.Imaging;
     using System.Linq;
     using System.Text;
 
@@ -42,9 +43,13 @@
         /// <returns></returns>
         public static byte[] GetImageBytesByFilePath(string filePath)
         {
-            using (Image img = Image.FromFile(filePath))
+            using (Image<Rgba32> image = Image.Load<Rgba32>(filePath))
             {
-                return GetImageBytes(img);
+                using (var ms = new MemoryStream())
+                {
+                    image.SaveAsPng(ms);
+                    return ms.ToArray();
+                }
             }
         }
 
@@ -53,11 +58,11 @@
         /// </summary>
         /// <param name="img"></param>
         /// <returns></returns>
-        public static byte[] GetImageBytes(Image img)
+        public static byte[] GetImageBytes(Image<Rgba32> img)
         {
             using (MemoryStream ms = new MemoryStream())
             {
-                img.Save(ms, img.RawFormat);
+                img.Save(ms, new JpegEncoder());
                 return ms.ToArray();
             }
         }
@@ -72,7 +77,7 @@
         {
             using (MemoryStream memoryStream = new MemoryStream(imageBytes))
             {
-                using (Image image = Image.FromStream(memoryStream))
+                using (Image<Rgba32> image = Image.Load<Rgba32>(memoryStream))
                 {
                     if (fileName.IsNull())
                     {
@@ -81,7 +86,7 @@
                     string localFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, savePath, fileName);
 
                     Directory.CreateDirectory(Path.GetDirectoryName(localFilePath));
-                    image.Save(localFilePath, ImageFormat.Jpeg);
+                    image.Save(localFilePath);
                 }
             }
         }
@@ -91,11 +96,11 @@
         /// </summary>
         /// <param name="imageBytes"></param>
         /// <returns></returns>
-        public static Image LoadImageFromBytes(byte[] imageBytes)
+        public static Image<Rgba32> LoadImageFromBytes(byte[] imageBytes)
         {
             using (MemoryStream memoryStream = new MemoryStream(imageBytes))
             {
-                return Image.FromStream(memoryStream);
+                return Image.Load<Rgba32>(memoryStream);
             }
         }
 
