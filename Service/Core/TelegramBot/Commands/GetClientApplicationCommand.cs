@@ -95,8 +95,8 @@
             {
                 if (media.Count == 1)
                 {
-                    var file = media.FirstOrDefault().Media;
-                    await _dataManager.GetData<TelegramBotManager>().SendPhotoMessage(chatid, file, caption);
+                    InputMedia file = media.FirstOrDefault();
+                    await _dataManager.GetData<TelegramBotManager>().SendMediaMessage(chatid, file, caption);
                 }
                 else
                 {

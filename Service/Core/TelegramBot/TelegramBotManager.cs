@@ -366,6 +366,32 @@ namespace Service.Core.TelegramBot
             }
         }
 
+        /// <summary>
+        /// Отправка медиа сообщения (видео, фото)
+        /// </summary>
+        /// <param name="chatId"></param>
+        /// <param name="media"></param>
+        /// <param name="caption"></param>
+        /// <param name="replyMarkup"></param>
+        /// <param name="parseMode"></param>
+        /// <returns></returns>
+        public async Task<Message> SendMediaMessage(long chatId, InputMedia media, string caption = null, IReplyMarkup replyMarkup = null, ParseMode? parseMode = null)
+        {
+            try
+            {
+                await WaitInitTask();
+                InputMediaPhoto filePhoto = media as InputMediaPhoto;
+                return filePhoto != null
+                    ? await SendPhotoMessage(chatId, media.Media, caption, replyMarkup: replyMarkup, parseMode: parseMode)
+                    : await SendVideoMessage(chatId, media.Media, caption, replyMarkup: replyMarkup, parseMode: parseMode);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to send media TG bot. {ex}");
+                throw ex;
+            }
+        }
+
 
         /// <summary>
         /// Отправляет видео
