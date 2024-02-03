@@ -3,8 +3,8 @@
     using Service.Abstract;
     using Service.Abstract.TelegramBot;
     using Service.Enums;
+    using Service.Support;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
     using Telegram.Bot.Types;
 
@@ -27,11 +27,13 @@
 
         private readonly DataManager _dataManager;
         private readonly Dictionary<string, string> _messages;
+        private readonly TelegramSupport _telegramSupport;
 
         public GetClientApplicationCommand(DataManager dataManager)
         {
             _dataManager = dataManager;
             _messages = _dataManager.GetData<CommandExecutor>().Messages;
+            _telegramSupport = new TelegramSupport(dataManager);
         }
 
         public async Task SendStartMessage(Update update)
@@ -59,7 +61,7 @@
             {
                 if (_dataManager.GetData<ICustomerManager>().ExistTelegram(userId))
                 {
-                    await SendUserApplication(update, userId);
+                    await _telegramSupport.SendUserApplication(update, userId);
                     _dataManager.GetData<CommandExecutor>().StopListen(this);
                 }
             }
@@ -70,37 +72,13 @@
                 {
                     foreach (var telegramUserId in telegramIds)
                     {
-                        await SendUserApplication(update, telegramUserId);
+                        await _telegramSupport.SendUserApplication(update, telegramUserId);
                     }
                     _dataManager.GetData<CommandExecutor>().StopListen(this);
                 }
                 else
                 {
                     await Execute(update);
-                }
-
-            }
-        }
-
-        private async Task SendUserApplication(Update update, long userId)
-        {
-            long chatid = Get.GetChatId(update);
-            var user = _dataManager.GetData<ICustomerManager>().GetClientByTelegram(userId.ToString());
-
-            int age = Get.GetAge(user.Birthday.Value);
-            string caption = $"{user.FirstName} - {age}, {user.SearchCity}\n{user.AboutMe}";
-            var media = _dataManager.GetData<ICustomerManager>().GetMediaFilesByUserId(userId);
-
-            if (media.Any() && media.Count > 0)
-            {
-                if (media.Count == 1)
-                {
-                    InputMedia file = media.FirstOrDefault();
-                    await _dataManager.GetData<TelegramBotManager>().SendMediaMessage(chatid, file, caption);
-                }
-                else
-                {
-                    await _dataManager.GetData<TelegramBotManager>().SendMediaGroupMessage(chatid, media, caption);
                 }
             }
         }

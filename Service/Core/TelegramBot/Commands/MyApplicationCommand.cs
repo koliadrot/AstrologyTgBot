@@ -1,10 +1,9 @@
 ﻿namespace Service.Core.TelegramBot.Commands
 {
-    using Service.Abstract;
     using Service.Abstract.TelegramBot;
     using Service.Enums;
+    using Service.Support;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
     using Telegram.Bot.Types;
 
@@ -27,11 +26,13 @@
 
         private readonly DataManager _dataManager;
         private readonly Dictionary<string, string> _messages;
+        private readonly TelegramSupport _telegramSupport;
 
         public MyApplicationCommand(DataManager dataManager)
         {
             _dataManager = dataManager;
             _messages = _dataManager.GetData<CommandExecutor>().Messages;
+            _telegramSupport = new TelegramSupport(dataManager);
         }
 
         public async Task SendStartMessage(Update update)
@@ -48,25 +49,7 @@
             await SendStartMessage(update);
 
             long userId = Get.GetUserId(update);
-            long chatid = Get.GetChatId(update);
-            var user = _dataManager.GetData<ICustomerManager>().GetClientByTelegram(userId.ToString());
-
-            int age = Get.GetAge(user.Birthday.Value);
-            string caption = $"{user.FirstName} - {age}, {user.SearchCity}\n{user.AboutMe}";
-            var media = _dataManager.GetData<ICustomerManager>().GetMediaFilesByUserId(userId);
-
-            if (media.Any() && media.Count > 0)
-            {
-                if (media.Count == 1)
-                {
-                    var file = media.FirstOrDefault().Media;
-                    await _dataManager.GetData<TelegramBotManager>().SendPhotoMessage(chatid, file, caption);
-                }
-                else
-                {
-                    await _dataManager.GetData<TelegramBotManager>().SendMediaGroupMessage(chatid, media, caption);
-                }
-            }
+            await _telegramSupport.SendUserApplication(update, userId);
         }
     }
 }
