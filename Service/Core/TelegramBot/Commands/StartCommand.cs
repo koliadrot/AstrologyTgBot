@@ -3,7 +3,6 @@ using Service.Abstract.TelegramBot;
 using Service.Enums;
 using Service.Extensions;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Service.Core.TelegramBot.Commands
 {
@@ -46,20 +45,9 @@ namespace Service.Core.TelegramBot.Commands
         public async Task Execute(Update update, string[] arg = null)
         {
             await SendStartMessage(update);
-            string message = string.Empty;
-            List<KeyboardButton> inlineKeyboardButtons = new List<KeyboardButton>();
-            ReplyKeyboardMarkup replyKeyboard = new ReplyKeyboardMarkup(new[]
-            {
-                inlineKeyboardButtons
-            });
-            replyKeyboard.ResizeKeyboard = true;
-            replyKeyboard.OneTimeKeyboard = true;
-
             string helloText = _dataManager.GetData<ISettingsManager>().GetTelegramBot().HelloText;
-            message = helloText.IsNull() ? DEFAULT_HELLO_TEXT : helloText;
+            string message = helloText.IsNull() ? DEFAULT_HELLO_TEXT : helloText;
 
-            long userId = Get.GetUserId(update);
-            await _dataManager.GetData<CommandExecutor>().InitCommands(userId);
             await _dataManager.GetData<CommandExecutor>().ListCommandMessage(update, false, message);
         }
     }

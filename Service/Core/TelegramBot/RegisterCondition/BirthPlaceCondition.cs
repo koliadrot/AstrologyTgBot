@@ -21,6 +21,8 @@
 
         public bool IsStarted => isStarted;
 
+        public bool IsCancel { get; private set; } = false;
+
         public object Info => _place;
 
         public bool IsIgnoredNextCondition => false;

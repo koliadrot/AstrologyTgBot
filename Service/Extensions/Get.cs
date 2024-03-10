@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Service
 {
@@ -216,6 +217,14 @@ namespace Service
         }
 
         /// <summary>
+        /// Получает уникальный Id для Inline кнопки
+        /// </summary>
+        /// <param name="inlineKeyboardButtons"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static string GetInlineId(this List<InlineKeyboardButton> inlineKeyboardButtons, string data) => $"{inlineKeyboardButtons.Count}:{data}";
+
+        /// <summary>
         /// Приводит мобильный номер к нормальному виду
         /// </summary>
         /// <param name="number"></param>
@@ -279,6 +288,28 @@ namespace Service
                 age -= 1;
             }
             return age;
+        }
+
+        /// <summary>
+        /// Возвращает валидное имя пользователя
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        public static string GetValidUserName(string userName, ParseMode parseMode)
+        {
+            string userNameWithoutSymbol = userName.StartsWith("@") ? userName.Substring(1) : userName;
+            if (parseMode == ParseMode.Markdown)
+            {
+                return $" [{userNameWithoutSymbol}](https://t.me/{userNameWithoutSymbol})";
+            }
+            else if (parseMode == ParseMode.Html)
+            {
+                return $"<a href=\"https://t.me/{userNameWithoutSymbol}\">{userNameWithoutSymbol}</a>";
+            }
+            else
+            {
+                return $"@{userNameWithoutSymbol}";
+            }
         }
     }
 }

@@ -83,6 +83,7 @@
                     new SearchAgeCondition(_dataManager),
                     new SearchGoalCondition(_dataManager),
                     new AboutMeCondition(_dataManager),
+                    new AvatarCondition(_dataManager),
                     new MediaCondition(_dataManager,this)
                 });
                 var conditionsBase = _dataManager.GetData<ISettingsManager>().GetTelegramBotRegisterConditions();
@@ -195,7 +196,7 @@
             var userData = new Dictionary<int, ICondition>();
             foreach (var condition in _registrationConditions)
             {
-                ProcessCondition(userData, condition);
+                BotExtensions.ProcessCondition(userData, condition);
             }
 
             foreach (var condition in userData)
@@ -257,30 +258,36 @@
                 {
                     _registerViewModel.AboutMe = (string)condition.Value.Info;
                 }
-                else if (condition.Value is MediaCondition)
+                else if (condition.Value is MediaCondition || condition.Value is AvatarCondition)
                 {
-                    _registerViewModel.ClientMediaInfo = (ClientMediaInfoViewModel)condition.Value.Info;
-                }
-            }
-
-            _registerViewModel.TelegramId = _telegramId;
-            _registerViewModel.UserName = _userName;
-        }
-
-        private void ProcessCondition(Dictionary<int, ICondition> userData, ICondition condition)
-        {
-            if (!userData.ContainsKey(condition.GetHashCode()))
-            {
-                userData[condition.GetHashCode()] = condition;
-
-                if (condition.Conditions != null && condition.Conditions.Count > 0)
-                {
-                    foreach (var nestedCondition in condition.Conditions)
+                    if (_registerViewModel.ClientMediaInfo != null)
                     {
-                        ProcessCondition(userData, nestedCondition);
+                        var newMedia = (ClientMediaInfoViewModel)condition.Value.Info;
+
+                        foreach (var item in newMedia.ClientPhotoInfos)
+                        {
+                            _registerViewModel.ClientMediaInfo.ClientPhotoInfos.Add(item);
+                        }
+
+                        foreach (var item in newMedia.ClientVideoInfos)
+                        {
+                            _registerViewModel.ClientMediaInfo.ClientVideoInfos.Add(item);
+                        }
+
+                        foreach (var item in newMedia.ClientVideoNoteInfos)
+                        {
+                            _registerViewModel.ClientMediaInfo.ClientVideoNoteInfos.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        _registerViewModel.ClientMediaInfo = (ClientMediaInfoViewModel)condition.Value.Info;
                     }
                 }
             }
+            _registerViewModel.ClientMatchInfo = new ClientMatchInfoViewModel();
+            _registerViewModel.TelegramId = _telegramId;
+            _registerViewModel.UserName = _userName;
         }
     }
 }

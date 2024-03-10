@@ -3,6 +3,7 @@ using NLog;
 using Service.Abstract;
 using Service.Abstract.TelegramBot;
 using Service.Core.TelegramBot.Commands;
+using Service.Core.TelegramBot.Notifies;
 using Service.Enums;
 using Service.Extensions;
 using Telegram.Bot.Types;
@@ -24,6 +25,13 @@ namespace Service.Core.TelegramBot
         /// Список доступных команд
         /// </summary>
         public IReadOnlyList<ICommand> Commands => _commands;
+
+        private List<INotify> _notifies;
+
+        /// <summary>
+        /// Список доступных уведомлений
+        /// </summary>
+        public IReadOnlyList<INotify> Notifies => _notifies;
 
 
         private List<BotCommand> _botCommands;
@@ -60,12 +68,13 @@ namespace Service.Core.TelegramBot
         }
 
         /// <summary>
-        /// Иници-я комманд
+        /// Иници-я стартера
         /// </summary>
         /// <returns></returns>
-        public async Task InitCommands(long userId)
+        public async Task Init(long userId)
         {
             var telegramBotData = DataManager.GetData<ISettingsManager>().GetTelegramBot();
+            bool isUserAuth = DataManager.GetData<ICustomerManager>().ExistTelegram(userId);
             Messages.Clear();
             foreach (var message in telegramBotData.Messages)
             {
@@ -74,14 +83,23 @@ namespace Service.Core.TelegramBot
                     _messages.Add(message.MessageName, message.MessageValue);
                 }
             }
-            DefaultCommand = DefaultCommand ?? new StartCommand(DataManager);
-            MenuCommand = MenuCommand ?? new MenuCommand(DataManager);
+
+            _notifies = new List<INotify>
+            {
+                new NewLikesNotify(DataManager),
+                new MatchNotify(DataManager)
+            };
+
+            MenuCommand = new MenuCommand(DataManager);
+            DefaultCommand = isUserAuth ? new FindApplicationCommand(DataManager) : new StartCommand(DataManager);
             _commands = new List<ICommand>
             {
                 DefaultCommand,
                 MenuCommand,
                 new RegisterCommand(DataManager),
                 new MyApplicationCommand(DataManager),
+                new CheckMatchCommand(DataManager),
+                !isUserAuth ? new FindApplicationCommand(DataManager) : new StartCommand(DataManager)
             };
 
             //var fillUserProfileCommand = new FillUserProfileCommand(DataManager);
@@ -90,7 +108,6 @@ namespace Service.Core.TelegramBot
             //    _commands.Add(fillUserProfileCommand);
             //}
 
-            bool isUserAuth = DataManager.GetData<ICustomerManager>().ExistTelegram(userId);
 
             string customTypeString = Enum.GetName(typeof(TelegramBotCommandType), TelegramBotCommandType.Custom);
             var customBotCommands = telegramBotData.BotCommands.Where(command => command.CommandType == customTypeString).ToList();
@@ -192,7 +209,18 @@ namespace Service.Core.TelegramBot
                     _isBusy = true;
                     messageText = Get.GetText(update);
 
-                    if (CurrentUpdater != null)
+                    if (_notifies != null && _notifies.Any(x => x.IsInteraction(update)))
+                    {
+                        foreach (var notify in _notifies)
+                        {
+                            if (notify.IsInteraction(update))
+                            {
+                                await notify.InlineAction(update);
+                                break;
+                            }
+                        }
+                    }
+                    else if (CurrentUpdater != null)
                     {
                         if (_reqiredCommands.Contains(messageText))
                         {
@@ -262,7 +290,7 @@ namespace Service.Core.TelegramBot
                         return;
                     }
                 }
-                await ListCommandMessage(update);
+                await DefaultCommandMessage(update);
             }
         }
 
@@ -276,7 +304,7 @@ namespace Service.Core.TelegramBot
             LastMenuReplyButtons = null;
             long chatId = Get.GetChatId(update);
             long userId = Get.GetUserId(update);
-            await InitCommands(userId);
+            await Init(userId);
             string fullMessage = string.Empty;
             if (isWrongMessage)
             {
@@ -417,7 +445,27 @@ namespace Service.Core.TelegramBot
         /// <returns></returns>
         public async Task MenuCommandMessage(Update update) => await MenuCommand.Execute(update);
 
-        private ICommand GetCommand(string commandName) => Commands.FirstOrDefault(x => x.Name == commandName);
+        /// <summary>
+        /// Получает команду по техническому имени
+        /// </summary>
+        /// <param name="commandName"></param>
+        /// <returns></returns>
+        public ICommand? GetCommandByCommandName(string commandName) => Commands.FirstOrDefault(x => x.Name == commandName);
+
+        /// <summary>
+        /// Получает команду по типу
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public ICommand? GetCommandByType(Type type) => Commands.FirstOrDefault(x => type.IsAssignableFrom(x.GetType()));
+
+        /// <summary>
+        /// Получает уведомление по типу
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public INotify? GetNotifyByType(Type type) => Notifies.FirstOrDefault(x => type.IsAssignableFrom(x.GetType()));
+
 
 
         private void CreateMenu(string menuJson, bool isAuth)
@@ -467,7 +515,7 @@ namespace Service.Core.TelegramBot
                         commandName = commandName.Substring(0, index);
                     }
                 }
-                ICommand command = GetCommand(commandName);
+                ICommand command = GetCommandByCommandName(commandName);
 
                 if (command != null)
                 {

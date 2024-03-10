@@ -13,5 +13,6 @@
         public bool IsNecessarily { get; set; }
         public bool IsEnable { get; set; }
         public int Order { get; set; }
+        public bool IsInfo { get; set; }
     }
 }

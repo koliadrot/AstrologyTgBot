@@ -26,5 +26,10 @@
         /// Видео
         /// </summary>
         public virtual ICollection<ClientVideoInfoViewModel> ClientVideoInfos { get; set; } = new List<ClientVideoInfoViewModel>();
+
+        /// <summary>
+        /// Вижео-кружки
+        /// </summary>
+        public virtual ICollection<ClientVideoNoteInfoViewModel> ClientVideoNoteInfos { get; set; } = new List<ClientVideoNoteInfoViewModel>();
     }
 }

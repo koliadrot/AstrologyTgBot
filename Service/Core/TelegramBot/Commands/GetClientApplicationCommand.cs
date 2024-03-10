@@ -61,7 +61,7 @@
             {
                 if (_dataManager.GetData<ICustomerManager>().ExistTelegram(userId))
                 {
-                    await _telegramSupport.SendUserApplication(update, userId);
+                    await _telegramSupport.SendUserApplication(update, userId, nameof(GetClientApplicationCommand));
                     _dataManager.GetData<CommandExecutor>().StopListen(this);
                 }
             }
@@ -72,7 +72,7 @@
                 {
                     foreach (var telegramUserId in telegramIds)
                     {
-                        await _telegramSupport.SendUserApplication(update, telegramUserId);
+                        await _telegramSupport.SendUserApplication(update, telegramUserId, nameof(GetClientApplicationCommand));
                     }
                     _dataManager.GetData<CommandExecutor>().StopListen(this);
                 }

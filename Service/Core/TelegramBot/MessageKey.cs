@@ -169,6 +169,82 @@
         /// Не загружены видео
         /// </summary>
         public const string WRONG_LOAD_VIDEO = "wrongLoadVideo";
+
+        /// <summary>
+        /// Хотите загрузить больше медиа файлов
+        /// </summary>
+        public const string MORE_LOAD_MEDIA = "moreLoadMedia";
+
+        /// <summary>
+        /// Нет такого варианта выбора
+        /// </summary>
+        public const string NO_VARITANT_CHOICE = "noVariantChoice";
+
+        /// <summary>
+        /// Приветственное сообщение по умолчанию у команды просмотра анкет
+        /// </summary>
+        public const string DEFAULT_FIND_APPLICATION = "defaultFindApplication";
+
+        /// <summary>
+        /// Написать любовное сообщение
+        /// </summary>
+        public const string WRITE_LOVE_LETTER = "writeLoveLetter";
+
+        /// <summary>
+        /// Любовное сообщение отправлено
+        /// </summary>
+        public const string SEND_LOVE_LETTER = "sendLoveLetter";
+
+        /// <summary>
+        /// Отправить фото или видео для аватара
+        /// </summary>
+        public const string ENTER_AVATAR = "enterAvatar";
+
+        /// <summary>
+        /// Приветственное сообщение по умолчанию у команды просмотра совпадений анкет
+        /// </summary>
+        public const string DEFAULT_CHECK_MATCH = "defaultCheckMatch";
+
+        /// <summary>
+        /// Отсуствуют симпатии
+        /// </summary>
+        public const string NO_CLIENT_MATCHS = "noClientMatchs";
+
+        /// <summary>
+        /// Отправить сообщение о взаимное симпатии себе
+        /// </summary>
+        public const string SEND_MATCH_MY_CLIENT = "sendMatchMyClient";
+
+        /// <summary>
+        /// Отправить сообщение о взаимной симпатии другому пользователю
+        /// </summary>
+        public const string SEND_MATCH_OTHER_CLIENT = "sendMatchOtherClient";
+
+        /// <summary>
+        /// Сообщает о симпатии другого пользователя
+        /// </summary>
+        public const string SEND_LIKE_MATCH = "sendLikeMatch";
+
+        /// <summary>
+        /// Отправляет сообщение симпатии с любовным сообщением
+        /// </summary>
+        public const string SEND_LOVE_LETTER_MATCH = "sendLoveLetterMatch";
+
+        /// <summary>
+        /// Отправляет сообщение симпатии с видео
+        /// </summary>
+        public const string SEND_VIDEO_MATCH = "sendVideoMatch";
+
+        /// <summary>
+        /// Отправляет уведомление о новых лайках
+        /// </summary>
+        public const string SEND_NOTIFY_NEW_LIKES = "sendNotifyNewLikes";
+
+        /// <summary>
+        /// Сколько осталось лайков у пользователя
+        /// </summary>
+        public const string COUNT_LEFT_LIKES = "countLeftLikes";
+
     }
 
     /// <summary>
@@ -255,6 +331,46 @@
         /// Аватар
         /// </summary>
         public const string Avatar = "avatar";
+
+        /// <summary>
+        /// Нравится
+        /// </summary>
+        public const string Like = "like";
+
+        /// <summary>
+        /// Любовное Письмо
+        /// </summary>
+        public const string LoveLetter = "loveletter";
+
+        /// <summary>
+        /// Не нравится
+        /// </summary>
+        public const string Dislike = "dislike";
+
+        /// <summary>
+        /// Профиль
+        /// </summary>
+        public const string Profile = "profile";
+
+        /// <summary>
+        /// Больше медиа
+        /// </summary>
+        public const string MORE_MEDIA = "moreMedia";
+
+        /// <summary>
+        /// Поиск анкет
+        /// </summary>
+        public const string FIND_APPLICATIONS = "findApplications";
+
+        /// <summary>
+        /// Смотреть лайки
+        /// </summary>
+        public const string WATCH_LIKES = "watchLikes";
+
+        /// <summary>
+        /// Показать анкету
+        /// </summary>
+        public const string SHOW_APPLICATION = "showApplication";
     }
 
     /// <summary>
@@ -286,5 +402,15 @@
         /// Медиа
         /// </summary>
         public const string MEDIA = "media";
+
+        /// <summary>
+        /// Имя пользователя
+        /// </summary>
+        public const string USER_NAME = "username";
+
+        /// <summary>
+        /// Лайки
+        /// </summary>
+        public const string LIKES = "likes";
     }
 }

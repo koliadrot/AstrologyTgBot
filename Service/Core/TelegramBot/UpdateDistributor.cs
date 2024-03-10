@@ -45,7 +45,7 @@ namespace Service.Core.TelegramBot
                 dataManager.AddData(_settingsManager, true);
                 dataManager.AddData(_logger, true);
                 listener = new CommandExecutor(dataManager);
-                await listener.InitCommands(userId);
+                await listener.Init(userId);
                 _listeners.Add(userId, listener);
             }
             else
@@ -71,7 +71,7 @@ namespace Service.Core.TelegramBot
                 dataManager.AddData(_settingsManager, true);
                 dataManager.AddData(_logger, true);
                 listener = new CommandExecutor(dataManager);
-                await listener.InitCommands(userId);
+                await listener.Init(userId);
                 _listeners.Add(userId, listener);
             }
             else
@@ -112,7 +112,7 @@ namespace Service.Core.TelegramBot
                 listener.Value.DataManager.AddData(_customerManager, true);
                 listener.Value.DataManager.AddData(_settingsManager, true);
                 listener.Value.DataManager.AddData(_logger, true);
-                await listener.Value.InitCommands(listener.Key);
+                await listener.Value.Init(listener.Key);
             }
         }
 

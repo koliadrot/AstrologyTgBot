@@ -24,6 +24,7 @@
                   columns.Bound(e => e.IsCanPass).Title("Кнопка \"Пропустить\"").Width(100).ClientTemplate("# if(IsCanPass){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
                   columns.Bound(e => e.IsNecessarily).Hidden();
                   columns.Bound(e => e.IsEnable).Title("Показывать при регистрации").Width(100).ClientTemplate("# if(IsEnable){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
+                  columns.Bound(e => e.IsInfo).Title("Подробное инфо").Width(100).ClientTemplate("# if(IsInfo){#" + "<div  class='fa fa-check' />" + "#}else{#" + "<div class='fa fa-ban' />" + "#}#");
               })
                 .ToolBar(toolbar =>
                 {

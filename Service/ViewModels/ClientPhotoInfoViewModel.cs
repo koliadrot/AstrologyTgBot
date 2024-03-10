@@ -1,9 +1,11 @@
 ﻿namespace Service.ViewModels
 {
+    using Data.Core.Interfaces;
+
     /// <summary>
     /// Фотоинформация клиента
     /// </summary>
-    public class ClientPhotoInfoViewModel
+    public class ClientPhotoInfoViewModel : BasePhotoInfoViewModel, IAvatarable
     {
         /// <summary>
         /// Id фото
@@ -21,33 +23,8 @@
         public string? MediaGroupId { get; set; }
 
         /// <summary>
-        /// Id фото
+        /// Это аватар?
         /// </summary>
-        public string FileId { get; set; }
-
-        /// <summary>
-        /// Id фото
-        /// </summary>
-        public string FileUniqueId { get; set; }
-
-        /// <summary>
-        /// Размер фото
-        /// </summary>
-        public long? FileSize { get; set; }
-
-        /// <summary>
-        /// Ширина фото
-        /// </summary>
-        public int Width { get; set; }
-
-        /// <summary>
-        /// Высота фото
-        /// </summary>
-        public int Height { get; set; }
-
-        /// <summary>
-        /// Массив байтов
-        /// </summary>
-        public byte[]? Photo { get; set; }
+        public bool? IsAvatar { get; set; }
     }
 }

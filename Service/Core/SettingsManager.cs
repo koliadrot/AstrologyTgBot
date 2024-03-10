@@ -99,6 +99,7 @@ namespace Service.Core
                         Order = condition.Order,
                         IsNecessarily = condition.IsNecessarily,
                         IsEnable = condition.IsEnable,
+                        IsInfo = condition.IsInfo,
 
                     };
                     registerConditions.Add(newRegisterCondition);
@@ -293,6 +294,7 @@ namespace Service.Core
                     condition.IsCanPass = viewModel.IsCanPass;
                     condition.Order = Mathf.Clamp(viewModel.Order, 0, 999);
                     condition.IsEnable = viewModel.IsEnable;
+                    condition.IsInfo = viewModel.IsInfo;
                 }
                 await _bonusDbContext.SaveChangesAsync();
             }

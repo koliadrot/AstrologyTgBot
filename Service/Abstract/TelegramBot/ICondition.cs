@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Telegram.Bot.Types;
+﻿using Telegram.Bot.Types;
 
 namespace Service.Abstract.TelegramBot
 {
@@ -13,6 +11,11 @@ namespace Service.Abstract.TelegramBot
         /// Выполнено ли условие
         /// </summary>
         bool IsDone { get; }
+
+        /// <summary>
+        /// Отменено ли условие
+        /// </summary>
+        bool IsCancel { get; }
 
         /// <summary>
         /// Запущено ли условие

@@ -4,6 +4,7 @@
     using Data.Core.Models;
     using Service.Abstract;
     using Service.Exceptions;
+    using Service.Extensions;
     using Service.ViewModels;
     using System.Linq;
     using System.Threading.Tasks;
@@ -50,14 +51,14 @@
         public async Task<UserViewModel?> Auth(LoginViewModel loginViewModel)
         {
             //NOTE: Не смог сохранить хэш правильный
-            //var passwordHash = Support.Support.GetMD5(loginViewModel.Password);
+            //var passwordHash = Crypto.GetMD5(loginViewModel.Password);
 
             var user = _bonusDbContext.Users.FirstOrDefault(f => f.Login == loginViewModel.Login && f.PasswordHash == loginViewModel.Password);
             if (user == null)
             {
                 return null;
             }
-            var token = Support.Support.CreateToken(loginViewModel.Login);
+            var token = Crypto.CreateToken(loginViewModel.Login);
             _bonusDbContext.ApiAccessTokens.Add(new ApiAccessToken
             {
                 UserId = user.UserId,
@@ -87,7 +88,7 @@
             {
                 throw new AuthException("Данный Email уже зарегистрирован");
             }
-            var passwordHash = Support.Support.GetMD5(viewModel.Password);
+            var passwordHash = Crypto.GetMD5(viewModel.Password);
 
             var newUser = new User
             {
@@ -98,7 +99,7 @@
             };
             await _bonusDbContext.Users.AddAsync(newUser);
             await _bonusDbContext.SaveChangesAsync();
-            var token = Support.Support.CreateToken(viewModel.Login);
+            var token = Crypto.CreateToken(viewModel.Login);
             await _bonusDbContext.ApiAccessTokens.AddAsync(new ApiAccessToken
             {
                 UserId = newUser.UserId,

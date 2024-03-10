@@ -3,6 +3,7 @@
     using NLog;
     using Service.Abstract.TelegramBot;
     using Service.Extensions;
+    using Service.Support;
     using Service.ViewModels;
     using System.Collections.Generic;
     using System.Threading.Tasks;
@@ -21,6 +22,8 @@
         private bool isStarted = false;
 
         public bool IsStarted => isStarted;
+
+        public bool IsCancel { get; private set; } = false;
 
         public object Info => _media;
 
@@ -48,7 +51,6 @@
 
         private const float START_DELAY = 10f;
         private const float MAX_DELAY = 15f;
-        private const int LIMIT_VIDEO_DURATION = 16;
         private const int LIMIT_MEDIA_COUNT = 10;
 
 
@@ -79,8 +81,7 @@
                 {
                     inlineKeyboardButtons.Add(new KeyboardButton(_messages[ReplyButton.SKIP]));
                 }
-                inlineKeyboardButtons.Add(new KeyboardButton(_messages[ReplyButton.Avatar]));
-                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.ENTER_MEDIA_INFO], new Dictionary<string, string>() { { Promt.DURATION, LIMIT_VIDEO_DURATION.ToString() } }), replyKeyboard);
+                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.ENTER_MEDIA_INFO], new Dictionary<string, string>() { { Promt.DURATION, TelegramSupport.LIMIT_VIDEO_DURATION.ToString() } }), replyKeyboard);
                 isStarted = true;
                 invalidVideoCount = 0;
                 SetDelay(START_DELAY, true);
@@ -100,30 +101,6 @@
             {
                 isDone = true;
                 _dataManager.GetData<ILogger>().Debug($"User:{userId}; Condition:{nameof(MediaCondition)} -  Skip");
-            }
-            else if (messageText == _messages[ReplyButton.Avatar])
-            {
-                var photos = await _dataManager.GetData<TelegramBotManager>().GetUserProfilePhoto(userId);
-                if (photos != null && photos.TotalCount > 0)
-                {
-                    var selectPhoto = photos.Photos[0].LastOrDefault();
-                    var photoBytes = await _dataManager.GetData<TelegramBotManager>().DownloadPhotoById(selectPhoto.FileId);
-                    _photos.Add(new ClientPhotoInfoViewModel()
-                    {
-                        FileId = selectPhoto.FileId,
-                        FileUniqueId = selectPhoto.FileUniqueId,
-                        FileSize = selectPhoto.FileSize,
-                        Width = selectPhoto.Width,
-                        Height = selectPhoto.Height,
-                        Photo = photoBytes
-                    });
-                    _media.ClientPhotoInfos = _photos;
-                    isDone = true;
-                }
-                else
-                {
-                    await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.EMPTY_AVATAR_INFO], new Dictionary<string, string>() { { Promt.DURATION, LIMIT_VIDEO_DURATION.ToString() } }));
-                }
             }
             else if (update.Message.Photo != null)
             {
@@ -167,7 +144,7 @@
                 if (mediaGroupId.IsNull())
                 {
                     var video = update.Message.Video;
-                    if (video.Duration <= LIMIT_VIDEO_DURATION)
+                    if (video.Duration <= TelegramSupport.LIMIT_VIDEO_DURATION)
                     {
                         var videoBytes = await _dataManager.GetData<TelegramBotManager>().DownloadVideoById(video.FileId);
                         var viewModel = new ClientVideoInfoViewModel()
@@ -198,14 +175,14 @@
                     }
                     else
                     {
-                        await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.VERY_LONG_VIDEO], new Dictionary<string, string>() { { Promt.DURATION, LIMIT_VIDEO_DURATION.ToString() } }));
+                        await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.VERY_LONG_VIDEO], new Dictionary<string, string>() { { Promt.DURATION, TelegramSupport.LIMIT_VIDEO_DURATION.ToString() } }));
                     }
 
                 }
                 else
                 {
                     var video = update.Message.Video;
-                    if (video.Duration <= LIMIT_VIDEO_DURATION)
+                    if (video.Duration <= TelegramSupport.LIMIT_VIDEO_DURATION)
                     {
                         var videoBytes = await _dataManager.GetData<TelegramBotManager>().DownloadVideoById(video.FileId);
                         var viewModel = new ClientVideoInfoViewModel()
@@ -269,7 +246,7 @@
             }
             else
             {
-                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.WRONG_LOAD_VIDEO], new Dictionary<string, string>() { { Promt.VIDEO, invalidVideoCount.ToString() }, { Promt.DURATION, LIMIT_VIDEO_DURATION.ToString() } }));
+                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.WRONG_LOAD_VIDEO], new Dictionary<string, string>() { { Promt.VIDEO, invalidVideoCount.ToString() }, { Promt.DURATION, TelegramSupport.LIMIT_VIDEO_DURATION.ToString() } }));
             }
         }
 
@@ -319,7 +296,7 @@
                 {
                     inlineKeyboardButtons.Add(new KeyboardButton(miniCommand));
                 }
-                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.WRONG_LOAD_VIDEO], new Dictionary<string, string>() { { Promt.VIDEO, invalidVideoCount.ToString() }, { Promt.DURATION, LIMIT_VIDEO_DURATION.ToString() } }), replyMarkup: replyKeyboard);
+                await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, Get.ReplaceKeysInText(_messages[MessageKey.WRONG_LOAD_VIDEO], new Dictionary<string, string>() { { Promt.VIDEO, invalidVideoCount.ToString() }, { Promt.DURATION, TelegramSupport.LIMIT_VIDEO_DURATION.ToString() } }), replyMarkup: replyKeyboard);
                 StopCheckerMediaGroup();
             }
             else

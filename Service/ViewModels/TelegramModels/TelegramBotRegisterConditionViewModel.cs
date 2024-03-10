@@ -44,5 +44,10 @@
         /// Порядоковый номер в списке условий
         /// </summary>
         public int Order { get; set; }
+
+        /// <summary>
+        /// Информационное условие
+        /// </summary>
+        public bool IsInfo { get; set; }
     }
 }

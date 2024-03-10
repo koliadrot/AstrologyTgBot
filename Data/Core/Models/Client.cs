@@ -50,7 +50,16 @@
         [DisplayName("Описание")]
         public string? AboutMe { get; set; }
 
+        [DisplayName("Статус")]
+        public string? Status { get; set; }
+
+        [DisplayName("Заблокирован")]
+        public bool? IsBlock { get; set; }
+
         [DisplayName("Медиа")]
         public virtual ClientMediaInfo ClientMediaInfo { get; set; }
+
+        [DisplayName("Совпадения")]
+        public virtual ClientMatchInfo ClientMatchInfo { get; set; }
     }
 }

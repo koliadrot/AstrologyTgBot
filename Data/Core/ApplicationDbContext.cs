@@ -33,8 +33,16 @@
         public DbSet<TelegramBotParamMessage> TelegramBotParamMessages { get; set; }
         public DbSet<ApiAccessToken> ApiAccessTokens { get; set; }
         public DbSet<Client> Clients { get; set; }
+        public DbSet<ClientMatchUncheckedVideoInfo> ClientMatchUncheckedVideoInfos { get; set; }
+        public DbSet<ClientMatchCheckedVideoInfo> ClientMatchCheckedVideoInfos { get; set; }
+        public DbSet<ClientMatchUncheckedVideoNoteInfo> ClientMatchUncheckedVideoNoteInfos { get; set; }
+        public DbSet<ClientMatchCheckedVideoNoteInfo> ClientMatchCheckedVideoNoteInfos { get; set; }
         public DbSet<ClientMediaInfo> ClientMediaInfos { get; set; }
         public DbSet<ClientPhotoInfo> ClientPhotoInfos { get; set; }
         public DbSet<ClientVideoInfo> ClientVideoInfos { get; set; }
+        public DbSet<ClientVideoNoteInfo> ClientVideoNoteInfos { get; set; }
+        public DbSet<ClientMatchInfo> ClientMatchInfos { get; set; }
+        public DbSet<ClientMatchUnchecked> UncheckedClientMatchs { get; set; }
+        public DbSet<ClientMatchChecked> CheckedClientMatchs { get; set; }
     }
 }

@@ -10,7 +10,7 @@
 
         public int ClientId { get; set; }
 
-        [ForeignKey("ClientId")]
+        [ForeignKey(nameof(ClientId))]
         public Client Client { get; set; }
 
         [DisplayName("Фотографии")]
@@ -18,5 +18,8 @@
 
         [DisplayName("Видео")]
         public virtual ICollection<ClientVideoInfo> ClientVideoInfos { get; set; } = new List<ClientVideoInfo>();
+
+        [DisplayName("Видео-кружки")]
+        public virtual ICollection<ClientVideoNoteInfo> ClientVideoNoteInfos { get; set; } = new List<ClientVideoNoteInfo>();
     }
 }

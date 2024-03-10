@@ -1,5 +1,6 @@
 ﻿namespace Service.Core.TelegramBot.Commands
 {
+    using Service.Abstract;
     using Service.Abstract.TelegramBot;
     using Service.Enums;
     using Service.Support;
@@ -8,7 +9,7 @@
     using Telegram.Bot.Types;
 
     /// <summary>
-    /// Команда анкеты
+    /// Моя анкета
     /// </summary>
     public class MyApplicationCommand : ICommand
     {
@@ -46,10 +47,12 @@
 
         public async Task Execute(Update update, string[] arg = null)
         {
-            await SendStartMessage(update);
-
             long userId = Get.GetUserId(update);
-            await _telegramSupport.SendUserApplication(update, userId);
+            if (_dataManager.GetData<ICustomerManager>().ExistTelegram(userId))
+            {
+                await SendStartMessage(update);
+                await _telegramSupport.SendUserApplication(update, userId, nameof(MyApplicationCommand));
+            }
         }
     }
 }

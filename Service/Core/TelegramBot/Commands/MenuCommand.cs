@@ -40,6 +40,10 @@ namespace Service.Core.TelegramBot.Commands
             }
         }
 
-        public async Task Execute(Update update, string[] arg = null) => await _dataManager.GetData<CommandExecutor>().ListCommandMessage(update, false, _messages[MessageKey.TRANSITION_HELP]);
+        public async Task Execute(Update update, string[] arg = null)
+        {
+            await SendStartMessage(update);
+            await _dataManager.GetData<CommandExecutor>().ListCommandMessage(update, false, _messages[MessageKey.TRANSITION_HELP]);
+        }
     }
 }

@@ -18,6 +18,7 @@ namespace Service.Core.TelegramBot.RegisterCondition
         private bool isStarted = false;
 
         public bool IsStarted => isStarted;
+        public bool IsCancel { get; private set; } = false;
 
         public object Info => null;
 

@@ -79,8 +79,23 @@
         public string? AboutMe { get; set; }
 
         /// <summary>
+        /// Статус анкеты
+        /// </summary>
+        public string? Status { get; set; }
+
+        /// <summary>
+        /// Заблокирован ли пользователь
+        /// </summary>
+        public bool? IsBlock { get; set; }
+
+        /// <summary>
         /// Медиа информация
         /// </summary>
         public virtual ClientMediaInfoViewModel ClientMediaInfo { get; set; }
+
+        /// <summary>
+        /// Совпадения
+        /// </summary>
+        public virtual ClientMatchInfoViewModel ClientMatchInfo { get; set; }
     }
 }
