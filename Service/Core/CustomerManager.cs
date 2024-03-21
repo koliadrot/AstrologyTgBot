@@ -18,14 +18,24 @@
     {
         private readonly ApplicationDbContext _bonusDbContext;
         private IMapper _mapper;
+        private bool _isDispose = false;
 
         private const float DALAY_TO_NOTIFY_NEW_LIKES = 1800;
 
         public CustomerManager()
         {
+            _isDispose = true;
             _bonusDbContext = new ApplicationDbContext();
             _mapper = new MapperConfig().GetMapper();
         }
+
+        public CustomerManager(ApplicationDbContext bonusDbContext, IMapper mapper)
+        {
+            _bonusDbContext = bonusDbContext;
+            _mapper = mapper;
+        }
+
+
 
         #region IDisposable Support
 
@@ -51,7 +61,7 @@
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
+            Dispose(_isDispose);
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }

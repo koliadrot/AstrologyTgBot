@@ -17,6 +17,8 @@
         private readonly Dictionary<string, string> _messages;
         private readonly TelegramSupport _telegramSupport;
 
+        public string Name => nameof(MatchNotify);
+
         public MatchNotify(DataManager dataManager)
         {
             _dataManager = dataManager;

@@ -1,9 +1,13 @@
 ﻿using Data.Core;
+using Hangfire;
+using Newtonsoft.Json;
 using NLog;
 using Service.Core.TelegramBot.Messages;
 using Service.Enums;
 using Service.Extensions;
 using Service.Support;
+using System.Net;
+using System.Text;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
@@ -824,4 +828,45 @@ namespace Service.Core.TelegramBot
         }
 
     }
+
+
+
+
+    public class BackgroundJobMethods
+    {
+        public static void EnqueueSomeBackgroundJobMethod()
+        {
+            BackgroundJob.Enqueue(() => SomeBackgroundJobMethod());
+        }
+
+        public static void SomeBackgroundJobMethod()
+        {
+            string token = "702310666:AAHsHpmZnzrErB5oK-Jmag8A0JDsCcHy6O8";
+            string Url = "https://api.telegram.org/bot" + token + "/sendMessage";
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
+
+            string postData = string.Format("text={0}&chat_id={1}", "Провекра", 504519150);
+            var data = Encoding.UTF8.GetBytes(postData);
+
+            request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.ContentLength = data.Length;
+
+            using (var stream = request.GetRequestStream())
+            {
+                stream.Write(data, 0, data.Length);
+            }
+
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            string contentResponse = null;
+
+            using (var streamReader = new StreamReader(response.GetResponseStream()))
+            {
+                contentResponse = streamReader.ReadToEnd();
+            }
+
+            var result = JsonConvert.DeserializeAnonymousType(contentResponse, new { ok = default(bool), result = new Telegram.Bot.Types.Message() });
+        }
+    }
+
 }

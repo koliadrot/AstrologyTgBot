@@ -12,9 +12,9 @@
     public class MobileManager : IMobileManager, IDisposable
     {
         private readonly ApplicationDbContext _bonusDbContext;
-        public MobileManager()
+        public MobileManager(ApplicationDbContext applicationDbContext)
         {
-            _bonusDbContext = new ApplicationDbContext();
+            _bonusDbContext = applicationDbContext;
         }
 
         #region IDisposable Support

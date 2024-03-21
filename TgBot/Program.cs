@@ -1,8 +1,13 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Data.Core;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Serialization;
 using NLog;
+using Quartz;
+using Service;
 using Service.Abstract;
 using Service.Core;
+using Service.Core.TaskPlanner;
 using Service.Core.TelegramBot;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,11 +20,26 @@ builder.Services.AddTransient<IUserManager, UserManager>();
 builder.Services.AddTransient<IMobileManager, MobileManager>();
 builder.Services.AddTransient<ISettingsManager, SettingsManager>();
 builder.Services.AddTransient<ICustomerManager, CustomerManager>();
+builder.Services.AddTransient<ICommunicationManager, CommunicationManager>();
 NLog.ILogger logger = LogManager.GetLogger("default");
 builder.Services.AddSingleton(logger);
 
 // Регистрация AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+var mapper = new MapperConfig().GetMapper();
+builder.Services.AddSingleton(mapper);
+
+builder.Services.AddQuartz(options =>
+{
+    options.UseMicrosoftDependencyInjectionJobFactory();
+});
+
+builder.Services.AddQuartzHostedService(options =>
+{
+    options.WaitForJobsToComplete = true;
+});
+
+builder.Services.ConfigureOptions<TaskBootstrapper>();
 
 // Телеграм бот
 var updateDistributor = new UpdateDistributor();
@@ -50,9 +70,14 @@ builder.Services.AddControllersWithViews()
             NamingStrategy = null // Установите в null для использования оригинальных имен свойств
         };
     });
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), new MariaDbServerVersion(new Version(10, 3, 39)));
+});
 
 builder.Services.AddMvc().AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
 builder.Services.AddKendo();
+
 
 var app = builder.Build();
 

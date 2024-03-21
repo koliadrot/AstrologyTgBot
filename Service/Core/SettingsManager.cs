@@ -11,10 +11,17 @@ namespace Service.Core
     public class SettingsManager : ISettingsManager, IDisposable
     {
         private readonly ApplicationDbContext _bonusDbContext;
+        private bool _isDispose = false;
 
         public SettingsManager()
         {
             _bonusDbContext = new ApplicationDbContext();
+            _isDispose = true;
+        }
+
+        public SettingsManager(ApplicationDbContext applicationDbContext)
+        {
+            _bonusDbContext = applicationDbContext;
         }
 
         #region IDisposable Support
@@ -47,7 +54,7 @@ namespace Service.Core
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
+            Dispose(_isDispose);
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }

@@ -30,6 +30,11 @@
             _logger = logger;
         }
 
+        /// <summary>
+        /// Получение обновление
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
         [Route(GlobalTelegramSettings.UPDATE_MESSAGE)]
         public async Task<IActionResult> Update(Update update)
         {
@@ -46,6 +51,12 @@
             }
         }
 
+        /// <summary>
+        /// Повторное обновление
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
         [Route(GlobalTelegramSettings.RE_UPDATE_MESSAGE)]
         public async Task<IActionResult> Reupdate(long userId, string password)
         {
@@ -58,6 +69,42 @@
             else
             {
                 _logger.Error("Failed reUpdate message TG bot!");
+                return StatusCode(((int)HttpStatusCode.Forbidden));
+            }
+        }
+
+        /// <summary>
+        /// Отправка сообщений
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route(GlobalTelegramSettings.SEND_MESSAGE)]
+        public async Task<IActionResult> Send([FromBody] Update update, string password = "")
+        {
+            if (password == GlobalTelegramSettings.API_PASSWORD)
+            {
+                Message message = default;
+                if (_telegramBotManager.IsStarted && !_telegramBotManager.IsDropPendingUpdates)
+                {
+                    long chatId = Get.GetChatId(update);
+                    string messageText = Get.GetText(update);
+                    if (await _updateDistributor.HasNotify(update))
+                    {
+                        message = await _updateDistributor.SendNotify(update);
+                    }
+                    else
+                    {
+                        message = await _telegramBotManager.SendTextMessage(chatId, messageText);
+                    }
+                }
+                _updateDistributor.Dispose(update);
+
+                return Ok(message);
+            }
+            else
+            {
+                _logger.Error("Failed send manual message TG bot! Wrong password!");
                 return StatusCode(((int)HttpStatusCode.Forbidden));
             }
         }

@@ -1,5 +1,6 @@
 ﻿using NLog;
 using Service.Abstract;
+using Service.Core.TelegramBot.Notifies;
 using Telegram.Bot.Types;
 
 namespace Service.Core.TelegramBot
@@ -30,12 +31,32 @@ namespace Service.Core.TelegramBot
             _logger = logger;
         }
 
-        /// <summary>
-        /// Получает обновление иденти-я по userId
-        /// </summary>
-        /// <param name="update"></param>
-        /// <returns></returns>
-        public async Task GetUpdate(Update update)
+        public async Task<Message?> SendNotify(Update update)
+        {
+            Message message = null;
+            string messageText = Get.GetText(update);
+            var executor = await InitExecutor(update);
+            var notify = executor.GetNotifyByName(messageText);
+            if (notify != null)
+            {
+                long userId = Get.GetUserId(update);
+                if (messageText == nameof(NewLikesNotify))
+                {
+                    var client = _customerManager.GetClientByTelegram(userId.ToString());
+                    message = await ((NewLikesNotify)notify).Send(client);
+                }
+            }
+            return message;
+        }
+
+        public async Task<bool> HasNotify(Update update)
+        {
+            string messageText = Get.GetText(update);
+            var executor = await InitExecutor(update);
+            return executor.GetNotifyByName(messageText) != null;
+        }
+
+        private async Task<CommandExecutor> InitExecutor(Update update)
         {
             long userId = Get.GetUserId(update);
             if (!_listeners.TryGetValue(userId, out CommandExecutor listener))
@@ -54,7 +75,18 @@ namespace Service.Core.TelegramBot
                 listener.DataManager.AddData(_settingsManager, true);
                 listener.DataManager.AddData(_logger, true);
             }
-            await listener.GetUpdate(update);
+            return listener;
+        }
+
+        /// <summary>
+        /// Получает обновление иденти-я по userId
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
+        public async Task GetUpdate(Update update)
+        {
+            var executor = await InitExecutor(update);
+            await executor.GetUpdate(update);
         }
 
         /// <summary>

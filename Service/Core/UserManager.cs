@@ -16,10 +16,10 @@
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _bonusDbContext;
 
-        public UserManager(IMapper mapper)
+        public UserManager(IMapper mapper, ApplicationDbContext applicationDbContext)
         {
             _mapper = mapper;
-            _bonusDbContext = new ApplicationDbContext();
+            _bonusDbContext = applicationDbContext;
         }
 
         #region IDisposable Support

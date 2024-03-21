@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using Service.Core;
+using Service.Extensions;
+using System.Text.RegularExpressions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -309,6 +311,25 @@ namespace Service
             else
             {
                 return $"@{userNameWithoutSymbol}";
+            }
+        }
+
+        /// <summary>
+        /// Получает Url адрес процессинга
+        /// </summary>
+        /// <returns></returns>
+        public static string GetProcUrl()
+        {
+            using (SettingsManager settingsManager = new SettingsManager())
+            {
+                var telegramBotParams = settingsManager.GetTelegramBot();
+                string baseUrl = telegramBotParams.WebHookUrl;
+
+                if (!baseUrl.IsNull() && !baseUrl.StartsWith("http://") && !baseUrl.StartsWith("https://"))
+                {
+                    baseUrl = "https://" + baseUrl;
+                }
+                return baseUrl;
             }
         }
     }

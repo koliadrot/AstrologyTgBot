@@ -8,6 +8,11 @@
     public interface INotify
     {
         /// <summary>
+        /// Техническое имя уведомления
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
         /// Взаимодействует ли пользователь с уведомлением
         /// </summary>
         /// <param name="update">Инфо</param>

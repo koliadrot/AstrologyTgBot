@@ -22,6 +22,8 @@
             _messages = _dataManager.GetData<CommandExecutor>().Messages;
         }
 
+        public string Name => nameof(NewLikesNotify);
+
         public bool IsInteraction(Update update)
         {
             bool isInteraction = false;
@@ -61,8 +63,9 @@
             }
         }
 
-        public async Task Send(ClientViewModel clientViewModel)
+        public async Task<Message?> Send(ClientViewModel clientViewModel)
         {
+            Message message = null;
             if (clientViewModel != null && _dataManager.GetData<ICustomerManager>().HasClientNewLikes(clientViewModel.ClientMatchInfo))
             {
                 int newLikes = _dataManager.GetData<ICustomerManager>().NewLikesCountByClientMatchInfo(clientViewModel.ClientMatchInfo);
@@ -75,10 +78,11 @@
                     });
                     inlineKeyboardButtons.Add(InlineKeyboardButton.WithCallbackData(_messages[ReplyButton.WATCH_LIKES], inlineKeyboardButtons.GetInlineId(nameof(NewLikesNotify))));
 
-                    await _dataManager.GetData<TelegramBotManager>().SendTextMessage(targetUserId, Get.ReplaceKeysInText(_messages[MessageKey.SEND_NOTIFY_NEW_LIKES], new Dictionary<string, string>() { { Promt.LIKES, newLikes.ToString() } }), replyMarkup: replyKeyboard);
+                    message = await _dataManager.GetData<TelegramBotManager>().SendTextMessage(targetUserId, Get.ReplaceKeysInText(_messages[MessageKey.SEND_NOTIFY_NEW_LIKES], new Dictionary<string, string>() { { Promt.LIKES, newLikes.ToString() } }), replyMarkup: replyKeyboard);
                     _dataManager.GetData<ICustomerManager>().UpdateTimeShowNewLikes(clientViewModel.ClientMatchInfo);
                 }
             }
+            return message;
         }
     }
 }

@@ -460,6 +460,13 @@ namespace Service.Core.TelegramBot
         public ICommand? GetCommandByType(Type type) => Commands.FirstOrDefault(x => type.IsAssignableFrom(x.GetType()));
 
         /// <summary>
+        /// Получает уведомление по техническому имени
+        /// </summary>
+        /// <param name="commandName"></param>
+        /// <returns></returns>
+        public INotify? GetNotifyByName(string notifyName) => Notifies.FirstOrDefault(x => x.Name == notifyName);
+
+        /// <summary>
         /// Получает уведомление по типу
         /// </summary>
         /// <param name="type"></param>
