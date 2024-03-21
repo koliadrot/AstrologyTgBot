@@ -89,6 +89,11 @@
         public bool? IsBlock { get; set; }
 
         /// <summary>
+        /// Дата создания анкеты
+        /// </summary>
+        public DateTime? CreationDate { get; set; }
+
+        /// <summary>
         /// Медиа информация
         /// </summary>
         public virtual ClientMediaInfoViewModel ClientMediaInfo { get; set; }

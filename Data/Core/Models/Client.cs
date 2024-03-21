@@ -56,6 +56,9 @@
         [DisplayName("Заблокирован")]
         public bool? IsBlock { get; set; }
 
+        [DisplayName("Дата создания")]
+        public DateTime? CreationDate { get; set; }
+
         [DisplayName("Медиа")]
         public virtual ClientMediaInfo ClientMediaInfo { get; set; }
 

@@ -288,6 +288,7 @@
             _registerViewModel.ClientMatchInfo = new ClientMatchInfoViewModel();
             _registerViewModel.TelegramId = _telegramId;
             _registerViewModel.UserName = _userName;
+            _registerViewModel.CreationDate = DateTime.Now;
         }
     }
 }
