@@ -241,6 +241,16 @@
         public const string SEND_NOTIFY_NEW_LIKES = "sendNotifyNewLikes";
 
         /// <summary>
+        /// Отправляет уведомление о лайках
+        /// </summary>
+        public const string SEND_NOTIFY_LIKES = "sendNotifyLikes";
+
+        /// <summary>
+        /// Отстуствие анкет по потребностям
+        /// </summary>
+        public const string NO_ACTUAL_FIND_CLIENTS = "noActualFindClients";
+
+        /// <summary>
         /// Сколько осталось лайков у пользователя
         /// </summary>
         public const string COUNT_LEFT_LIKES = "countLeftLikes";

@@ -43,7 +43,7 @@ namespace Service.Core.TelegramBot
                 if (messageText == nameof(NewLikesNotify))
                 {
                     var client = _customerManager.GetClientByTelegram(userId.ToString());
-                    message = await ((NewLikesNotify)notify).Send(client);
+                    message = await ((NewLikesNotify)notify).Send(client, false);
                 }
             }
             return message;

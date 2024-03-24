@@ -19,7 +19,7 @@
         {
             foreach (var filter in filters)
             {
-                client = filter.Filter(client);
+                client = filter.Filter(client).ToList();
             }
             return client;
         }

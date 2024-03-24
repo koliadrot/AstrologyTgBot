@@ -1,6 +1,7 @@
 ﻿namespace Service.Extensions
 {
     using Service.Abstract.TelegramBot;
+    using Service.Support;
     using System.Text.RegularExpressions;
 
     public static class VariableExtensions
@@ -135,5 +136,28 @@
         /// </summary>
         /// <returns></returns>
         public static bool IsValidLink(this string url) => Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+
+        /// <summary>
+        /// Метод для расчета расстояния между двумя координатами по формуле Haversine
+        /// </summary>
+        /// <param name="from">От кого</param>
+        /// <param name="to">К кому</param>
+        /// <returns></returns>
+        public static double DistanceTo(this Coordinate from, Coordinate to)
+        {
+            const double EarthRadiusKm = 6371;
+
+            double dLat = DegreesToRadians(to.Latitude - from.Latitude);
+            double dLon = DegreesToRadians(to.Longitude - from.Longitude);
+
+            double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                       Math.Cos(DegreesToRadians(from.Latitude)) * Math.Cos(DegreesToRadians(to.Latitude)) *
+                       Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            double distance = EarthRadiusKm * c;
+            return distance;
+
+            double DegreesToRadians(double degrees) => degrees * Math.PI / 180;
+        }
     }
 }

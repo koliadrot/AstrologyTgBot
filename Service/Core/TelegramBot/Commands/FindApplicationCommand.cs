@@ -39,13 +39,13 @@
 
 
         private ReplyKeyboardMarkup _replyKeyboard;
-        private Random _random = new Random();
         private List<string> _supportMiniComands = new List<string>();
         private List<IClientFitrable> _clientFiters = new List<IClientFitrable>();
 
         private NewLikesNotify? _newLikesNotify;
         private ClientViewModel? _currentClient;
         private ClientViewModel? _myClient;
+        private List<ClientViewModel> _findClients = new List<ClientViewModel>();
 
         private readonly DataManager _dataManager;
         private readonly Dictionary<string, string> _messages;
@@ -85,9 +85,20 @@
                 _dataManager.GetData<CommandExecutor>().StartListen(this);
                 await SendStartMessage(update);
                 _currentClient = null;
-                CollectClientFilter(update);
+                InitFindClients(update);
                 await SendNextApplication(update);
             }
+        }
+
+        private void InitFindClients(Update update, ClientViewModel? excludeClientViewModel = null, bool forceInit = false)
+        {
+            if (_findClients == null || !_findClients.Any() || forceInit)
+            {
+                _findClients = _dataManager.GetData<ICustomerManager>().GetClients(excludeClientViewModel);
+                CollectClientFilter(update);
+                _findClients = _findClients.Filter(_clientFiters).ToList();
+            }
+
         }
 
         private void CollectClientFilter(Update update)
@@ -97,6 +108,11 @@
                 long userId = Get.GetUserId(update);
                 _myClient = _dataManager.GetData<ICustomerManager>().GetClientByTelegram(userId.ToString());
                 _clientFiters.Add(new BlockYourSelfTelegramClientFilter(userId));
+                _clientFiters.Add(new AlreadyMatchFilter(_myClient));
+                _clientFiters.Add(new SearchGenderFilter(_myClient));
+                _clientFiters.Add(new SearchGoalFilter(_myClient));
+                _clientFiters.Add(new SearchAgeFilter(_myClient));
+                _clientFiters.Add(new SearchGeoFilter(_myClient));
             }
         }
 
@@ -104,11 +120,13 @@
         {
             if (_currentClient == null)
             {
-                //NOTE:Надо ли при каждом запросе тянуть весь список клиентов?
-                var clients = _dataManager.GetData<ICustomerManager>().GetClients(excludeClientViewModel);
-                clients = clients.Filter(_clientFiters).ToList();
-                int nextIndexid = _random.Next(0, clients.Count());
-                _currentClient = clients[nextIndexid];
+                InitFindClients(update, excludeClientViewModel);
+                if (_findClients?.Count == 0)
+                {
+                    long chatId = Get.GetChatId(update);
+                    return await _dataManager.GetData<TelegramBotManager>().SendTextMessage(chatId, _messages[MessageKey.NO_ACTUAL_FIND_CLIENTS]);
+                }
+                _currentClient = _findClients[0];
             }
             Message message = null;
             if (long.TryParse(_currentClient.TelegramId, out long targetUserId))
@@ -140,7 +158,6 @@
             _dataManager.GetData<CommandExecutor>().StartListen(this);
             await SendStartMessage(update);
             _currentClient = null;
-            CollectClientFilter(update);
             return await SendNextApplication(update, excludeClientViewModel);
         }
 
@@ -313,10 +330,11 @@
                 BuildUserData(matchViewModel);
                 _dataManager.GetData<ICustomerManager>().CreateClientMatch(matchViewModel);
 
-                if (matchViewModel.MatchType != MatchType.Dislike.ToString())
+                if (matchViewModel.MatchType != MatchType.Dislike.ToString() && _dataManager.GetData<ICustomerManager>().HasClientNewLikes(_currentClient.ClientMatchInfo))
                 {
                     await _newLikesNotify?.Send(_currentClient);
                 }
+                _findClients.Remove(_currentClient);
                 _currentClient = null;
             }
         }

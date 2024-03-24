@@ -111,7 +111,7 @@
             var clientsId = GetTelegramClientsId().ToList();
             List<ClientViewModel> clients = new List<ClientViewModel>();
             clientsId.ForEach(id => clients.Add(GetClientByTelegram(id)));
-            if (excludeClients != null)
+            if (excludeClients != null && excludeClients.Length > 0)
             {
                 clients = clients.Where(x => excludeClients.Any(client => client?.ClientId != x.ClientId)).ToList();
             }
@@ -145,6 +145,7 @@
                 if (client.ClientMatchInfo != null)
                 {
                     client.ClientMatchInfo.UncheckedClientMatchs = _bonusDbContext.UncheckedClientMatchs.Include(x => x.ClientMatchUncheckedVideoNoteInfo).Include(x => x.ClientMatchUncheckedVideoInfo).Where(x => x.ClientMatchInfoId == client.ClientMatchInfo.ClientMatchInfoId).ToList();
+                    client.ClientMatchInfo.CheckedClientMatchs = _bonusDbContext.CheckedClientMatchs.Include(x => x.ClientMatchCheckedVideoNoteInfo).Include(x => x.ClientMatchCheckedVideoInfo).Where(x => x.ClientMatchInfoId == client.ClientMatchInfo.ClientMatchInfoId).ToList();
                 }
                 else
                 {

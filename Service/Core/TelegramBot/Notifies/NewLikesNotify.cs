@@ -63,12 +63,13 @@
             }
         }
 
-        public async Task<Message?> Send(ClientViewModel clientViewModel)
+        public async Task<Message?> Send(ClientViewModel clientViewModel, bool isNewLike = true)
         {
             Message message = null;
-            if (clientViewModel != null && _dataManager.GetData<ICustomerManager>().HasClientNewLikes(clientViewModel.ClientMatchInfo))
+            if (clientViewModel != null)
             {
-                int newLikes = _dataManager.GetData<ICustomerManager>().NewLikesCountByClientMatchInfo(clientViewModel.ClientMatchInfo);
+                int newLikes = isNewLike ? _dataManager.GetData<ICustomerManager>().NewLikesCountByClientMatchInfo(clientViewModel.ClientMatchInfo)
+                    : _dataManager.GetData<ICustomerManager>().NewLikesCountByClientMatchInfo(clientViewModel.ClientMatchInfo, false);
                 if (newLikes > 0 && long.TryParse(clientViewModel.TelegramId, out long targetUserId))
                 {
                     List<InlineKeyboardButton> inlineKeyboardButtons = new List<InlineKeyboardButton>();
@@ -78,7 +79,8 @@
                     });
                     inlineKeyboardButtons.Add(InlineKeyboardButton.WithCallbackData(_messages[ReplyButton.WATCH_LIKES], inlineKeyboardButtons.GetInlineId(nameof(NewLikesNotify))));
 
-                    message = await _dataManager.GetData<TelegramBotManager>().SendTextMessage(targetUserId, Get.ReplaceKeysInText(_messages[MessageKey.SEND_NOTIFY_NEW_LIKES], new Dictionary<string, string>() { { Promt.LIKES, newLikes.ToString() } }), replyMarkup: replyKeyboard);
+                    string baseMessageText = isNewLike ? _messages[MessageKey.SEND_NOTIFY_NEW_LIKES] : _messages[MessageKey.SEND_NOTIFY_LIKES];
+                    message = await _dataManager.GetData<TelegramBotManager>().SendTextMessage(targetUserId, Get.ReplaceKeysInText(baseMessageText, new Dictionary<string, string>() { { Promt.LIKES, newLikes.ToString() } }), replyMarkup: replyKeyboard);
                     _dataManager.GetData<ICustomerManager>().UpdateTimeShowNewLikes(clientViewModel.ClientMatchInfo);
                 }
             }

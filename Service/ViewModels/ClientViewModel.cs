@@ -1,5 +1,6 @@
 ﻿namespace Service.ViewModels
 {
+    using Service.Support;
     using System;
 
     /// <summary>
@@ -68,6 +69,41 @@
         /// </summary>
         public string? SearchAge { get; set; }
 
+        private int? _minSearchAge = null;
+
+        /// <summary>
+        /// Минимальная возрастная граница поиска
+        /// </summary>
+        public int MinSearchAge
+        {
+            get
+            {
+                if (_minSearchAge == null)
+                {
+                    _minSearchAge = int.Parse(SearchAge.Split('-')[0]);
+                }
+                return _minSearchAge.Value;
+            }
+        }
+
+        public int? _maxSearchAge = null;
+
+        /// <summary>
+        /// Максимальная граница поиска возраста
+        /// </summary>
+        public int MaxSearchAge
+        {
+            get
+            {
+                if (_maxSearchAge == null)
+                {
+                    _maxSearchAge = int.Parse(SearchAge.Split('-')[1]);
+                }
+                return _maxSearchAge.Value;
+            }
+        }
+
+
         /// <summary>
         /// Цель поиска
         /// </summary>
@@ -102,5 +138,24 @@
         /// Совпадения
         /// </summary>
         public virtual ClientMatchInfoViewModel ClientMatchInfo { get; set; }
+
+        private Coordinate _coordinate = null;
+
+        /// <summary>
+        /// Координаты Поиска
+        /// </summary>
+        public Coordinate SearchCoordinate
+        {
+            get
+            {
+                if (_coordinate == null)
+                {
+                    _coordinate = new Coordinate(SearchCoord.Split(':')[0], SearchCoord.Split(':')[1]);
+                }
+                return _coordinate;
+            }
+        }
+
+
     }
 }

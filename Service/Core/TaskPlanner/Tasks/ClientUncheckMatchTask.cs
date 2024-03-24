@@ -56,16 +56,14 @@
             _communicationManager = communicationManager;
         }
 
-        public async Task Execute(IJobExecutionContext context)
+        public Task Execute(IJobExecutionContext context)
         {
             var clients = _customerManager.GetClients();
             foreach (var client in clients)
             {
-                if (_customerManager.HasClientNewLikes(client.ClientMatchInfo))
-                {
-                    await _communicationManager.GetCurrentCommunication().SendMessage(client, new SendCommunicationInfo() { Message = nameof(NewLikesNotify) }, string.Empty, string.Empty);
-                }
+                _communicationManager.GetCurrentCommunication().SendMessage(client, new SendCommunicationInfo() { Message = nameof(NewLikesNotify) }, string.Empty, string.Empty);
             }
+            return Task.CompletedTask;
         }
     }
 }
