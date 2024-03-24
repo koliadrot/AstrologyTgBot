@@ -255,6 +255,10 @@
         /// </summary>
         public const string COUNT_LEFT_LIKES = "countLeftLikes";
 
+        /// <summary>
+        /// Отправляет уведомление о предложении просмотра анкет
+        /// </summary>
+        public const string SEND_NOTIFY_FIND_CLIENTS = "sendNotifyFindClients";
     }
 
     /// <summary>
@@ -376,6 +380,11 @@
         /// Смотреть лайки
         /// </summary>
         public const string WATCH_LIKES = "watchLikes";
+
+        /// <summary>
+        /// Смотреть анкеты
+        /// </summary>
+        public const string WATCH_FIND_CLIENTS = "watchFindClients";
 
         /// <summary>
         /// Показать анкету

@@ -40,10 +40,14 @@ namespace Service.Core.TelegramBot
             if (notify != null)
             {
                 long userId = Get.GetUserId(update);
+                var client = _customerManager.GetClientByTelegram(userId.ToString());
                 if (messageText == nameof(NewLikesNotify))
                 {
-                    var client = _customerManager.GetClientByTelegram(userId.ToString());
                     message = await ((NewLikesNotify)notify).Send(client, false);
+                }
+                else if (messageText == nameof(OfferShowFindClientsNotify))
+                {
+                    message = await ((OfferShowFindClientsNotify)notify).Send(client);
                 }
             }
             return message;

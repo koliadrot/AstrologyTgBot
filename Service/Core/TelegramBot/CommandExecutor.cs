@@ -87,7 +87,8 @@ namespace Service.Core.TelegramBot
             _notifies = new List<INotify>
             {
                 new NewLikesNotify(DataManager),
-                new MatchNotify(DataManager)
+                new MatchNotify(DataManager),
+                new OfferShowFindClientsNotify(DataManager),
             };
 
             MenuCommand = new MenuCommand(DataManager);

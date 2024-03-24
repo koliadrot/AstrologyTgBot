@@ -116,7 +116,7 @@
                         FileSize = photo.FileSize,
                         Width = photo.Width,
                         Height = photo.Height,
-                        Photo = photoBytes
+                        //Photo = photoBytes
                     });
                     _media.ClientPhotoInfos = _photos;
                     isDone = true;
@@ -133,7 +133,7 @@
                         FileSize = photo.FileSize,
                         Width = photo.Width,
                         Height = photo.Height,
-                        Photo = photoBytes
+                        //Photo = photoBytes
                     });
                     await StartCheckerMediaGroup(update);
                 }
@@ -156,7 +156,7 @@
                             Height = video.Height,
                             Duration = video.Duration,
                             MimeType = video.MimeType,
-                            Video = videoBytes
+                            //Video = videoBytes
                         };
                         if (video.Thumbnail != null)
                         {
@@ -166,7 +166,7 @@
                             viewModel.ThumbnailFileSize = video.Thumbnail.FileSize;
                             viewModel.ThumbnailWidth = video.Thumbnail.Width;
                             viewModel.ThumbnailHeight = video.Thumbnail.Height;
-                            viewModel.Thumbnail = photoThumbnailBytes;
+                            //viewModel.Thumbnail = photoThumbnailBytes;
                         }
 
                         _videos.Add(viewModel);
@@ -195,7 +195,7 @@
                             Height = video.Height,
                             Duration = video.Duration,
                             MimeType = video.MimeType,
-                            Video = videoBytes,
+                            //Video = videoBytes,
                         };
                         if (video.Thumbnail != null)
                         {
@@ -205,7 +205,7 @@
                             viewModel.ThumbnailFileSize = video.Thumbnail.FileSize;
                             viewModel.ThumbnailWidth = video.Thumbnail.Width;
                             viewModel.ThumbnailHeight = video.Thumbnail.Height;
-                            viewModel.Thumbnail = photoThumbnailBytes;
+                            //viewModel.Thumbnail = photoThumbnailBytes;
                         }
                         _videos.Add(viewModel);
                         SetDelay(START_DELAY);

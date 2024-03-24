@@ -285,6 +285,7 @@
                     }
                 }
             }
+            _registerViewModel.IsBlock = false;
             _registerViewModel.ClientMatchInfo = new ClientMatchInfoViewModel();
             _registerViewModel.TelegramId = _telegramId;
             _registerViewModel.UserName = _userName;

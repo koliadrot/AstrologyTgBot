@@ -4,8 +4,21 @@
     using Service.Abstract.Communication;
     using Service.Core.Communication.Algorithms;
 
+    /// <summary>
+    /// Менеджер коммуникаций
+    /// </summary>
     public class CommunicationManager : ICommunicationManager
     {
-        public ICommunication GetCurrentCommunication() => new TelegramAlgorithm();
+        private ICommunication _currentAlgorithm = null;
+
+        public ICommunication GetCurrentCommunication()
+        {
+            if (_currentAlgorithm == null)
+            {
+                //NOTE:Пока без админки будет автоматически выбираться телеграмм
+                _currentAlgorithm = new TelegramAlgorithm();
+            }
+            return _currentAlgorithm;
+        }
     }
 }

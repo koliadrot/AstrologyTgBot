@@ -15,12 +15,21 @@ var builder = WebApplication.CreateBuilder(args);
 // Конфигурация
 builder.Configuration.AddJsonFile("appsettings.json");
 
+// Ини-ция контекста базы данных
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), new MariaDbServerVersion(new Version(10, 3, 39)));
+});
+
 // Add services to the container.
 builder.Services.AddTransient<IUserManager, UserManager>();
 builder.Services.AddTransient<IMobileManager, MobileManager>();
 builder.Services.AddTransient<ISettingsManager, SettingsManager>();
 builder.Services.AddTransient<ICustomerManager, CustomerManager>();
-builder.Services.AddTransient<ICommunicationManager, CommunicationManager>();
+
+ICommunicationManager communicationManager = new CommunicationManager();
+builder.Services.AddSingleton(communicationManager);
+
 NLog.ILogger logger = LogManager.GetLogger("default");
 builder.Services.AddSingleton(logger);
 
@@ -70,10 +79,6 @@ builder.Services.AddControllersWithViews()
             NamingStrategy = null // Установите в null для использования оригинальных имен свойств
         };
     });
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-{
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), new MariaDbServerVersion(new Version(10, 3, 39)));
-});
 
 builder.Services.AddMvc().AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
 builder.Services.AddKendo();

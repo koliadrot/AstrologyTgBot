@@ -15,6 +15,8 @@
 
     public class TelegramAlgorithm : ICommunication
     {
+        public bool IsLock { get; private set; } = false;
+
         public string Description() => "Отправка сообщений в Telegram";
 
         public void AbortMessage(string MessageId, ClientViewModel To, string Login, string Password)
@@ -105,6 +107,12 @@
 
         public async Task<ReceiveCommunicationInfo> SendMessage(ClientViewModel To, SendCommunicationInfo MessageModel, string Login, string Password, string From = "")
         {
+            while (IsLock)
+            {
+                await Task.Yield();
+            }
+            IsLock = true;
+            var receiveCommunicationInfo = new ReceiveCommunicationInfo { IsSend = false };
             string messageText = MessageModel.Message;
             if (!To.TelegramId.IsNull() && long.TryParse(To.TelegramId, out long chatId))
             {
@@ -148,14 +156,15 @@
                                 SupportsInlineQueries = false,
                             };
                             string requestJson = JsonConvert.SerializeObject(update);
-                            string fullUrl = $"{baseUrl}/{GlobalTelegramSettings.BASE_MESSAGE}/{GlobalTelegramSettings.SEND_MESSAGE}?password={HttpUtility.UrlEncode(GlobalTelegramSettings.API_PASSWORD)}";
+                            string typeMessage = MessageModel.AdditionalParams.TryGetValue(ICommunication.TYPE_MESSAGE_KEY, out string newTypeMessage) ? newTypeMessage : GlobalTelegramSettings.SEND_MESSAGE;
+                            string fullUrl = $"{baseUrl}/{GlobalTelegramSettings.BASE_MESSAGE}/{typeMessage}?password={HttpUtility.UrlEncode(GlobalTelegramSettings.API_PASSWORD)}";
                             var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
                             HttpResponseMessage response = await client.PostAsync(fullUrl, content);
                             if (response.IsSuccessStatusCode)
                             {
                                 var contentResponse = await response.Content.ReadAsStringAsync();
                                 var result = JsonConvert.DeserializeObject<Message>(contentResponse);
-                                return new ReceiveCommunicationInfo
+                                receiveCommunicationInfo = new ReceiveCommunicationInfo
                                 {
                                     ExternalId = result.MessageId.ToString(),
                                     IsSend = true,
@@ -170,7 +179,8 @@
                     catch (InvalidOperationException ex) { }
                 }
             }
-            return new ReceiveCommunicationInfo { IsSend = false };
+            IsLock = false;
+            return receiveCommunicationInfo;
         }
 
         public async Task<string> GetBalance(string login, string password) => "";

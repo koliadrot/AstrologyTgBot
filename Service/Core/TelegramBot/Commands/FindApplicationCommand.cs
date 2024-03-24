@@ -3,7 +3,6 @@
     using Service.Abstract;
     using Service.Abstract.Filtrable;
     using Service.Abstract.TelegramBot;
-    using Service.Core.Filtrable.Client;
     using Service.Core.TelegramBot.FindCondition;
     using Service.Core.TelegramBot.Notifies;
     using Service.Enums;
@@ -103,16 +102,10 @@
 
         private void CollectClientFilter(Update update)
         {
-            if (!_clientFiters.Any())
+            if (_clientFiters == null || !_clientFiters.Any())
             {
-                long userId = Get.GetUserId(update);
-                _myClient = _dataManager.GetData<ICustomerManager>().GetClientByTelegram(userId.ToString());
-                _clientFiters.Add(new BlockYourSelfTelegramClientFilter(userId));
-                _clientFiters.Add(new AlreadyMatchFilter(_myClient));
-                _clientFiters.Add(new SearchGenderFilter(_myClient));
-                _clientFiters.Add(new SearchGoalFilter(_myClient));
-                _clientFiters.Add(new SearchAgeFilter(_myClient));
-                _clientFiters.Add(new SearchGeoFilter(_myClient));
+                _myClient = _dataManager.GetData<ICustomerManager>().GetClientByTelegram(Get.GetUserId(update).ToString());
+                _clientFiters = _dataManager.GetData<ICustomerManager>().GetFindClientFilters(_myClient);
             }
         }
 

@@ -10,10 +10,12 @@
     /// </summary>
     public class BlockYourSelfTelegramClientFilter : IClientFitrable
     {
-        private long _myTelegramId = default;
+        private string _myTelegramId = default;
 
-        public BlockYourSelfTelegramClientFilter(long myTelegramId) => _myTelegramId = myTelegramId;
+        public BlockYourSelfTelegramClientFilter(long myTelegramId) => _myTelegramId = myTelegramId.ToString();
 
-        public IEnumerable<ClientViewModel> Filter(IEnumerable<ClientViewModel> filters) => filters.Where(x => x.TelegramId != _myTelegramId.ToString());
+        public BlockYourSelfTelegramClientFilter(ClientViewModel myClient) => _myTelegramId = myClient.TelegramId;
+
+        public IEnumerable<ClientViewModel> Filter(IEnumerable<ClientViewModel> filters) => filters.Where(x => x.TelegramId != _myTelegramId);
     }
 }

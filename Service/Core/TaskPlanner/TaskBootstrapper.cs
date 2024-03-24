@@ -18,7 +18,8 @@
             {
                 _tasks = new List<ITask>()
                 {
-                    new ClientUncheckMatchTask()
+                    new ClientUncheckMatchTask(),
+                    new OfferShowClientsTask(),
                 };
             }
             return _tasks;

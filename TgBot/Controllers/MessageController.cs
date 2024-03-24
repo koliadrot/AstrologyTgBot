@@ -16,6 +16,8 @@
         private readonly TelegramBotManager _telegramBotManager;
         private readonly UpdateDistributor _updateDistributor;
 
+        private int countConnections = 0;
+
         public MessageController(
             ICustomerManager customerManager,
             ISettingsManager settingsManager,
@@ -89,14 +91,7 @@
                 {
                     long chatId = Get.GetChatId(update);
                     string messageText = Get.GetText(update);
-                    if (await _updateDistributor.HasNotify(update))
-                    {
-                        message = await _updateDistributor.SendNotify(update);
-                    }
-                    else
-                    {
-                        message = await _telegramBotManager.SendTextMessage(chatId, messageText);
-                    }
+                    message = await _telegramBotManager.SendTextMessage(chatId, messageText);
                 }
                 _updateDistributor.Dispose(update);
 
@@ -109,5 +104,64 @@
             }
         }
 
+        /// <summary>
+        /// Отправка уведомления об предложении посмотреть анкеты
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route(GlobalTelegramSettings.OFFER_SHOW_FIND_CLIENTS_NOTIFY)]
+        public async Task<IActionResult> OfferShowFindClientsNotify([FromBody] Update update, string password = "")
+        {
+            if (password == GlobalTelegramSettings.API_PASSWORD)
+            {
+                Message message = default;
+                if (_telegramBotManager.IsStarted && !_telegramBotManager.IsDropPendingUpdates)
+                {
+                    if (await _updateDistributor.HasNotify(update))
+                    {
+                        message = await _updateDistributor.SendNotify(update);
+                    }
+                }
+                _updateDistributor.Dispose(update);
+
+                return Ok(message);
+            }
+            else
+            {
+                _logger.Error($"Failed send {nameof(OfferShowFindClientsNotify)} notify TG bot! Wrong password!");
+                return StatusCode(((int)HttpStatusCode.Forbidden));
+            }
+        }
+
+        /// <summary>
+        /// Отправка уведомления о не просмотренных лайках
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route(GlobalTelegramSettings.NEW_LIKES_NOTIFY)]
+        public async Task<IActionResult> NewLikesNotify([FromBody] Update update, string password = "")
+        {
+            if (password == GlobalTelegramSettings.API_PASSWORD)
+            {
+                Message message = default;
+                if (_telegramBotManager.IsStarted && !_telegramBotManager.IsDropPendingUpdates)
+                {
+                    if (await _updateDistributor.HasNotify(update))
+                    {
+                        message = await _updateDistributor.SendNotify(update);
+                    }
+                }
+                _updateDistributor.Dispose(update);
+
+                return Ok(message);
+            }
+            else
+            {
+                _logger.Error($"Failed send {nameof(NewLikesNotify)} notify TG bot! Wrong password!");
+                return StatusCode(((int)HttpStatusCode.Forbidden));
+            }
+        }
     }
 }

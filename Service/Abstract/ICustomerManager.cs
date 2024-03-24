@@ -1,5 +1,6 @@
 ﻿namespace Service.Abstract
 {
+    using Service.Abstract.Filtrable;
     using Service.Support;
     using Service.ViewModels;
 
@@ -195,5 +196,12 @@
         /// <param name="clientId"></param>
         /// <returns></returns>
         ClientMatchCheckedViewModel? GetTargetClientCheckedMatch(int clientMatchInfoId, string telegramId);
+
+        /// <summary>
+        /// Получает список поисковых фильтров 
+        /// </summary>
+        /// <param name="myClient"></param>
+        /// <returns></returns>
+        List<IClientFitrable> GetFindClientFilters(ClientViewModel myClient);
     }
 }

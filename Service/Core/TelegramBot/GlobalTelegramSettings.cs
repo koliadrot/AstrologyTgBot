@@ -14,6 +14,8 @@
         public const string UPDATE_MESSAGE = "update";
         public const string RE_UPDATE_MESSAGE = "reupdate";
         public const string SEND_MESSAGE = "send";
+        public const string OFFER_SHOW_FIND_CLIENTS_NOTIFY = "offershowfindclientsnotify";
+        public const string NEW_LIKES_NOTIFY = "newlikesnotify";
         #endregion
     }
 }

@@ -3,18 +3,18 @@
     using Quartz;
     using Service.Abstract;
     using Service.Abstract.Communication;
+    using Service.Abstract.Filtrable;
     using Service.Abstract.TaskPlanner;
     using Service.Core.TelegramBot.Notifies;
+    using Service.Extensions;
     using Service.ViewModels.Communication;
-    using System.Threading.Tasks;
 
     /// <summary>
-    /// Задача на рассылку сообщения что есть лайки не просмотренные
+    /// Предложение посмотреть анкеты
     /// </summary>
-    public class ClientUncheckMatchTask : ITask
+    public class OfferShowClientsTask : ITask
     {
-        private int DELAY_TASK = 30;
-        private int START_DELAY = 10;
+        private int DELAY_TASK = 24;
 
         private JobKey? _jobKey = null;
         public JobKey Key
@@ -23,7 +23,7 @@
             {
                 if (_jobKey == null)
                 {
-                    _jobKey = JobKey.Create(nameof(ClientUncheckMatchTask));
+                    _jobKey = JobKey.Create(nameof(OfferShowClientsTask));
                 }
                 return _jobKey;
             }
@@ -36,10 +36,10 @@
             if (!IsInit)
             {
                 options
-                .AddJob<ClientUncheckMatchJob>(jobBuiler => jobBuiler.WithIdentity(Key).Build())
+                .AddJob<OfferShowClientsJob>(jobBuiler => jobBuiler.WithIdentity(Key).Build())
                 .AddTrigger(trigger =>
                 {
-                    trigger.ForJob(Key).WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(DELAY_TASK).RepeatForever()).StartAt(DateBuilder.FutureDate(START_DELAY, IntervalUnit.Second)).Build();
+                    trigger.ForJob(Key).WithSimpleSchedule(schedule => schedule.WithIntervalInHours(DELAY_TASK).RepeatForever()).StartAt(DateBuilder.DateOf(0, 0, 0)).Build();
                 });
             }
         }
@@ -47,12 +47,12 @@
     }
 
     [DisallowConcurrentExecution]
-    public class ClientUncheckMatchJob : IJob
+    public class OfferShowClientsJob : IJob
     {
         private readonly ICustomerManager _customerManager;
         private readonly ICommunicationManager _communicationManager;
 
-        public ClientUncheckMatchJob(ICustomerManager customerManager, ICommunicationManager communicationManager)
+        public OfferShowClientsJob(ICustomerManager customerManager, ICommunicationManager communicationManager)
         {
             _customerManager = customerManager;
             _communicationManager = communicationManager;
@@ -63,15 +63,20 @@
             var clients = _customerManager.GetClients();
             SendCommunicationInfo sendCommunicationInfo = new SendCommunicationInfo()
             {
-                Message = nameof(NewLikesNotify),
+                Message = nameof(OfferShowFindClientsNotify),
                 AdditionalParams = new Dictionary<string, string>()
                 {
-                    {ICommunication.TYPE_MESSAGE_KEY,nameof(NewLikesNotify) }
+                    {ICommunication.TYPE_MESSAGE_KEY,nameof(OfferShowFindClientsNotify) }
                 }
             };
             foreach (var client in clients)
             {
-                if (_customerManager.NewLikesCountByClientMatchInfo(client.ClientMatchInfo, false) > 0)
+                var myClient = client;
+                var findClients = clients.Where(x => x.ClientId != myClient.ClientId);
+                List<IClientFitrable> _clientFiters = _customerManager.GetFindClientFilters(myClient);
+                findClients = findClients.Filter(_clientFiters).ToList();
+
+                if (findClients.Any())
                 {
                     await _communicationManager.GetCurrentCommunication().SendMessage(client, sendCommunicationInfo, string.Empty, string.Empty);
                 }

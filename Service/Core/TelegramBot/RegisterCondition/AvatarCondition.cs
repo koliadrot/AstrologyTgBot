@@ -106,7 +106,7 @@
                         FileSize = selectPhoto.FileSize,
                         Width = selectPhoto.Width,
                         Height = selectPhoto.Height,
-                        Photo = photoBytes,
+                        //Photo = photoBytes,
                         IsAvatar = true
                     };
                     _media.ClientPhotoInfos.Add(viewModel);
@@ -131,7 +131,7 @@
                         FileSize = selectPhoto.FileSize,
                         Width = selectPhoto.Width,
                         Height = selectPhoto.Height,
-                        Photo = photoBytes,
+                        //Photo = photoBytes,
                         IsAvatar = true
                     };
                     _media.ClientPhotoInfos.Add(viewModel);
@@ -160,7 +160,7 @@
                             Height = video.Height,
                             Duration = video.Duration,
                             MimeType = video.MimeType,
-                            Video = videoBytes,
+                            //Video = videoBytes,
                             IsAvatar = true
                         };
                         if (video.Thumbnail != null)
@@ -171,7 +171,7 @@
                             viewModel.ThumbnailFileSize = video.Thumbnail.FileSize;
                             viewModel.ThumbnailWidth = video.Thumbnail.Width;
                             viewModel.ThumbnailHeight = video.Thumbnail.Height;
-                            viewModel.Thumbnail = photoThumbnailBytes;
+                            //viewModel.Thumbnail = photoThumbnailBytes;
                         }
 
                         _media.ClientVideoInfos.Add(viewModel);
@@ -204,7 +204,7 @@
                             FileSize = videoNote.FileSize,
                             Length = videoNote.Length,
                             Duration = videoNote.Duration,
-                            VideoNote = videoNoteBytes,
+                            //VideoNote = videoNoteBytes,
                             IsAvatar = true
                         };
                         if (videoNote.Thumbnail != null)
@@ -215,7 +215,7 @@
                             viewModel.ThumbnailFileSize = videoNote.Thumbnail.FileSize;
                             viewModel.ThumbnailWidth = videoNote.Thumbnail.Width;
                             viewModel.ThumbnailHeight = videoNote.Thumbnail.Height;
-                            viewModel.Thumbnail = photoThumbnailBytes;
+                            //viewModel.Thumbnail = photoThumbnailBytes;
                         }
 
                         _media.ClientVideoNoteInfos.Add(viewModel);

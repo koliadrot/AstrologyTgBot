@@ -5,6 +5,8 @@
     using Data.Core.Models;
     using Microsoft.EntityFrameworkCore;
     using Service.Abstract;
+    using Service.Abstract.Filtrable;
+    using Service.Core.Filtrable.Client;
     using Service.Enums;
     using Service.Support;
     using Service.ViewModels;
@@ -106,6 +108,8 @@
             }
         }
 
+
+
         public List<ClientViewModel> GetClients(params ClientViewModel?[] excludeClients)
         {
             var clientsId = GetTelegramClientsId().ToList();
@@ -122,7 +126,7 @@
 
         public ClientViewModel GetClientByTelegram(string userId)
         {
-            Client client = _bonusDbContext.Clients.Include(x => x.ClientMediaInfo).Include(x => x.ClientMatchInfo).FirstOrDefault(x => x.TelegramId == userId);
+            Client client = _bonusDbContext.Clients.Where(x => x.IsBlock.HasValue && !x.IsBlock.Value).Include(x => x.ClientMediaInfo).Include(x => x.ClientMatchInfo).FirstOrDefault(x => x.TelegramId == userId);
             ClientViewModel viewModel = new ClientViewModel();
             if (client != null)
             {
@@ -275,9 +279,6 @@
                     {
                         clientMatchInfo.LetterLikes += 1;
                     }
-                    //NOTE:Если копится определенное кол-во или время прошло больше чем надо с прошлого раза, то слать уведомление об этом.
-                    //clientMatchInfo.NewLikes += 1;
-                    //clientMatchInfo.LastShowMatches = clientMatchInfo.LastShowMatches != null ? clientMatchInfo.LastShowMatches : DateTime.Now;
                 }
 
 
@@ -380,13 +381,6 @@
                     {
                         clientMatchInfo.Likes += 1;
                     }
-                    //clientMatchInfo.NewLikes -= 1;
-                    //clientMatchInfo.LastShowMatches = DateTime.Now;
-                    //if (clientMatchInfo.NewLikes <= 0)
-                    //{
-                    //    clientMatchInfo.NewLikes = 0;
-                    //    clientMatchInfo.LastShowMatches = null;
-                    //}
 
                     ClientMatchChecked clientMatchChecked = new ClientMatchChecked()
                     {
@@ -585,6 +579,19 @@
                 }
             }
             return clientMatches;
+        }
+
+        public List<IClientFitrable> GetFindClientFilters(ClientViewModel myClient)
+        {
+            return new List<IClientFitrable>
+            {
+                new BlockYourSelfTelegramClientFilter(myClient),
+                new AlreadyMatchFilter(myClient),
+                new SearchGenderFilter(myClient),
+                new SearchGoalFilter(myClient),
+                new SearchAgeFilter(myClient),
+                new SearchGeoFilter(myClient)
+            };
         }
     }
 }
