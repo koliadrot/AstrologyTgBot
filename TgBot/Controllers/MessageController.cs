@@ -116,12 +116,9 @@
             if (password == GlobalTelegramSettings.API_PASSWORD)
             {
                 Message message = default;
-                if (_telegramBotManager.IsStarted && !_telegramBotManager.IsDropPendingUpdates)
+                if (_telegramBotManager.IsStarted && !_telegramBotManager.IsDropPendingUpdates && await _updateDistributor.HasNotify(update))
                 {
-                    if (await _updateDistributor.HasNotify(update))
-                    {
-                        message = await _updateDistributor.SendNotify(update);
-                    }
+                    message = await _updateDistributor.SendNotify(update);
                 }
                 _updateDistributor.Dispose(update);
 
@@ -146,12 +143,9 @@
             if (password == GlobalTelegramSettings.API_PASSWORD)
             {
                 Message message = default;
-                if (_telegramBotManager.IsStarted && !_telegramBotManager.IsDropPendingUpdates)
+                if (_telegramBotManager.IsStarted && !_telegramBotManager.IsDropPendingUpdates && await _updateDistributor.HasNotify(update))
                 {
-                    if (await _updateDistributor.HasNotify(update))
-                    {
-                        message = await _updateDistributor.SendNotify(update);
-                    }
+                    message = await _updateDistributor.SendNotify(update);
                 }
                 _updateDistributor.Dispose(update);
 
@@ -160,6 +154,32 @@
             else
             {
                 _logger.Error($"Failed send {nameof(NewLikesNotify)} notify TG bot! Wrong password!");
+                return StatusCode(((int)HttpStatusCode.Forbidden));
+            }
+        }
+
+        /// <summary>
+        /// Пересобирает список актуальных клиентов анкет
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route(GlobalTelegramSettings.RECOLLECT_FIND_CLIENTS)]
+        public async Task<IActionResult> RecollectFindClients([FromBody] Update update, string password = "")
+        {
+            if (password == GlobalTelegramSettings.API_PASSWORD)
+            {
+                if (_telegramBotManager.IsStarted && !_telegramBotManager.IsDropPendingUpdates && await _updateDistributor.HasSupportCommands(update))
+                {
+                    await _updateDistributor.ExecuteSupportCommands(update);
+                }
+                _updateDistributor.Dispose(update);
+
+                return Ok();
+            }
+            else
+            {
+                _logger.Error($"Failed {nameof(RecollectFindClients)} TG bot! Wrong password!");
                 return StatusCode(((int)HttpStatusCode.Forbidden));
             }
         }

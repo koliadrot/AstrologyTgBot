@@ -126,7 +126,7 @@
 
         public ClientViewModel GetClientByTelegram(string userId)
         {
-            Client client = _bonusDbContext.Clients.Where(x => x.IsBlock.HasValue && !x.IsBlock.Value).Include(x => x.ClientMediaInfo).Include(x => x.ClientMatchInfo).FirstOrDefault(x => x.TelegramId == userId);
+            Client client = _bonusDbContext.Clients.Where(x => x.IsBlock.HasValue && !x.IsBlock.Value && x.Status == ClientStatusType.Active.ToString()).Include(x => x.ClientMediaInfo).Include(x => x.ClientMatchInfo).FirstOrDefault(x => x.TelegramId == userId);
             ClientViewModel viewModel = new ClientViewModel();
             if (client != null)
             {

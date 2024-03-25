@@ -20,6 +20,7 @@
                 {
                     new ClientUncheckMatchTask(),
                     new OfferShowClientsTask(),
+                    new RecollectNewClientsTask()
                 };
             }
             return _tasks;

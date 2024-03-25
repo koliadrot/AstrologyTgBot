@@ -60,6 +60,29 @@ namespace Service.Core.TelegramBot
             return executor.GetNotifyByName(messageText) != null;
         }
 
+        public async Task ExecuteSupportCommands(Update update)
+        {
+            long userId = Get.GetUserId(update);
+            string messageText = Get.GetText(update);
+            foreach (var listener in _listeners)
+            {
+                var supportCommand = listener.Value.GetSupportCommandExecutorByName(messageText);
+                if (supportCommand != null)
+                {
+                    update.Message.From.Id = userId;
+                    update.Message.Chat.Id = userId;
+                    await supportCommand.SupportExecute(update);
+                }
+            }
+        }
+
+        public async Task<bool> HasSupportCommands(Update update)
+        {
+            string messageText = Get.GetText(update);
+            var executor = await InitExecutor(update);
+            return _listeners.Any(x => x.Value.GetSupportCommandExecutorByName(messageText) != null);
+        }
+
         private async Task<CommandExecutor> InitExecutor(Update update)
         {
             long userId = Get.GetUserId(update);

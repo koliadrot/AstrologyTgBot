@@ -33,6 +33,13 @@ namespace Service.Core.TelegramBot
         /// </summary>
         public IReadOnlyList<INotify> Notifies => _notifies;
 
+        private List<ISupportCommandExecutor> _supportCommandExecutors;
+
+        /// <summary>
+        /// Список доступных вспомогательных команд
+        /// </summary>
+        public IReadOnlyList<ISupportCommandExecutor> SupportCommandExecutors => _supportCommandExecutors;
+
 
         private List<BotCommand> _botCommands;
         private Dictionary<string, string> _messages = new Dictionary<string, string>();
@@ -186,6 +193,8 @@ namespace Service.Core.TelegramBot
             //    _reqiredCommands.Add(fillUserProfileCommand);
             //}
 
+            _supportCommandExecutors = new List<ISupportCommandExecutor>();
+            _supportCommandExecutors.AddRange(Commands.OfType<ISupportCommandExecutor>());
         }
 
         public void StartListen(IUpdater updater) => _updater = updater;
@@ -474,7 +483,19 @@ namespace Service.Core.TelegramBot
         /// <returns></returns>
         public INotify? GetNotifyByType(Type type) => Notifies.FirstOrDefault(x => type.IsAssignableFrom(x.GetType()));
 
+        /// <summary>
+        /// Получает вспомошательную команду по техническому имени
+        /// </summary>
+        /// <param name="commandName"></param>
+        /// <returns></returns>
+        public ISupportCommandExecutor? GetSupportCommandExecutorByName(string key) => SupportCommandExecutors.FirstOrDefault(x => x.Key == key);
 
+        /// <summary>
+        /// Получает вспомошательную команду по типу
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public ISupportCommandExecutor? GetSupportCommandExecutorByType(Type type) => SupportCommandExecutors.FirstOrDefault(x => type.IsAssignableFrom(x.GetType()));
 
         private void CreateMenu(string menuJson, bool isAuth)
         {

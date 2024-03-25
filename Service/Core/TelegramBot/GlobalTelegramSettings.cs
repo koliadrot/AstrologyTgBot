@@ -16,6 +16,7 @@
         public const string SEND_MESSAGE = "send";
         public const string OFFER_SHOW_FIND_CLIENTS_NOTIFY = "offershowfindclientsnotify";
         public const string NEW_LIKES_NOTIFY = "newlikesnotify";
+        public const string RECOLLECT_FIND_CLIENTS = "recollectfindclients";
         #endregion
     }
 }

@@ -38,6 +38,16 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 var mapper = new MapperConfig().GetMapper();
 builder.Services.AddSingleton(mapper);
 
+// Телеграм бот
+var updateDistributor = new UpdateDistributor();
+var telegramBot = new TelegramBotManager();
+telegramBot.Logger = logger;
+telegramBot.Start();
+
+//NOTE: регистрация телеграм менеджера в DI для лаконичности
+builder.Services.AddSingleton(updateDistributor);
+builder.Services.AddSingleton(telegramBot);
+
 builder.Services.AddQuartz(options =>
 {
     options.UseMicrosoftDependencyInjectionJobFactory();
@@ -49,16 +59,6 @@ builder.Services.AddQuartzHostedService(options =>
 });
 
 builder.Services.ConfigureOptions<TaskBootstrapper>();
-
-// Телеграм бот
-var updateDistributor = new UpdateDistributor();
-var telegramBot = new TelegramBotManager();
-telegramBot.Logger = logger;
-telegramBot.Start();
-
-//NOTE: регистрация телеграм менеджера в DI для лаконичности
-builder.Services.AddSingleton(updateDistributor);
-builder.Services.AddSingleton(telegramBot);
 
 builder.Services.AddAuthentication(auth =>
 {

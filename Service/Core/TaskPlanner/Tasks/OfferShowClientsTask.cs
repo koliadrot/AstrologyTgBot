@@ -5,6 +5,7 @@
     using Service.Abstract.Communication;
     using Service.Abstract.Filtrable;
     using Service.Abstract.TaskPlanner;
+    using Service.Core.TelegramBot;
     using Service.Core.TelegramBot.Notifies;
     using Service.Extensions;
     using Service.ViewModels.Communication;
@@ -66,7 +67,7 @@
                 Message = nameof(OfferShowFindClientsNotify),
                 AdditionalParams = new Dictionary<string, string>()
                 {
-                    {ICommunication.TYPE_MESSAGE_KEY,nameof(OfferShowFindClientsNotify) }
+                    {ICommunication.TYPE_MESSAGE_KEY,GlobalTelegramSettings.OFFER_SHOW_FIND_CLIENTS_NOTIFY }
                 }
             };
             foreach (var client in clients)

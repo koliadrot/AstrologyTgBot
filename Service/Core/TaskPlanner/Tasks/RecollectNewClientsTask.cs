@@ -5,16 +5,17 @@
     using Service.Abstract.Communication;
     using Service.Abstract.TaskPlanner;
     using Service.Core.TelegramBot;
-    using Service.Core.TelegramBot.Notifies;
+    using Service.Core.TelegramBot.Commands;
     using Service.ViewModels.Communication;
     using System.Threading.Tasks;
 
+
     /// <summary>
-    /// Задача на рассылку сообщения что есть лайки не просмотренные
+    /// Обновление списка клиентов для просмотра анкет
     /// </summary>
-    public class ClientUncheckMatchTask : ITask
+    public class RecollectNewClientsTask : ITask
     {
-        private int DELAY_TASK = 30;
+        private int DELAY_TASK = 15;
         private int START_DELAY = 10;
 
         private JobKey? _jobKey = null;
@@ -24,7 +25,7 @@
             {
                 if (_jobKey == null)
                 {
-                    _jobKey = JobKey.Create(nameof(ClientUncheckMatchTask));
+                    _jobKey = JobKey.Create(nameof(RecollectNewClientsTask));
                 }
                 return _jobKey;
             }
@@ -37,7 +38,7 @@
             if (!IsInit)
             {
                 options
-                .AddJob<ClientUncheckMatchJob>(jobBuiler => jobBuiler.WithIdentity(Key).Build())
+                .AddJob<RecollectNewClientsJob>(jobBuiler => jobBuiler.WithIdentity(Key).Build())
                 .AddTrigger(trigger =>
                 {
                     trigger.ForJob(Key).WithSimpleSchedule(schedule => schedule.WithIntervalInMinutes(DELAY_TASK).RepeatForever()).StartAt(DateBuilder.FutureDate(START_DELAY, IntervalUnit.Second)).Build();
@@ -48,35 +49,30 @@
     }
 
     [DisallowConcurrentExecution]
-    public class ClientUncheckMatchJob : IJob
+    public class RecollectNewClientsJob : IJob
     {
-        private readonly ICustomerManager _customerManager;
         private readonly ICommunicationManager _communicationManager;
+        private readonly ICustomerManager _customerManager;
 
-        public ClientUncheckMatchJob(ICustomerManager customerManager, ICommunicationManager communicationManager)
+        public RecollectNewClientsJob(ICustomerManager customerManager, ICommunicationManager communicationManager)
         {
-            _customerManager = customerManager;
             _communicationManager = communicationManager;
+            _customerManager = customerManager;
         }
 
         public async Task Execute(IJobExecutionContext context)
         {
-            var clients = _customerManager.GetClients();
+            //NOTE:тут клиент не так важен, просто требуется модель клиента
+            var client = _customerManager.GetClients().FirstOrDefault();
             SendCommunicationInfo sendCommunicationInfo = new SendCommunicationInfo()
             {
-                Message = nameof(NewLikesNotify),
+                Message = nameof(FindApplicationCommand),
                 AdditionalParams = new Dictionary<string, string>()
                 {
-                    {ICommunication.TYPE_MESSAGE_KEY,GlobalTelegramSettings.NEW_LIKES_NOTIFY }
+                    {ICommunication.TYPE_MESSAGE_KEY,GlobalTelegramSettings.RECOLLECT_FIND_CLIENTS }
                 }
             };
-            foreach (var client in clients)
-            {
-                if (_customerManager.NewLikesCountByClientMatchInfo(client.ClientMatchInfo, false) > 0)
-                {
-                    await _communicationManager.GetCurrentCommunication().SendMessage(client, sendCommunicationInfo, string.Empty, string.Empty);
-                }
-            }
+            await _communicationManager.GetCurrentCommunication().SendMessage(client, sendCommunicationInfo, string.Empty, string.Empty);
         }
     }
 }

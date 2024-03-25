@@ -17,7 +17,7 @@
     /// <summary>
     /// Поиск анкет
     /// </summary>
-    public class FindApplicationCommand : ICommand, IUpdater, IListener
+    public class FindApplicationCommand : ICommand, IUpdater, IListener, ISupportCommandExecutor
     {
         public string Name { get; set; } = "/findapplication";
 
@@ -34,12 +34,15 @@
         private IUpdater _updater;
         public IUpdater CurrentUpdater => _updater;
 
+        public string Key => nameof(FindApplicationCommand);
+
         private List<ICondition> _conditions = new List<ICondition>();
 
+        private bool _isInitFindClients = false;
 
         private ReplyKeyboardMarkup _replyKeyboard;
         private List<string> _supportMiniComands = new List<string>();
-        private List<IClientFitrable> _clientFiters = new List<IClientFitrable>();
+        private List<IClientFitrable> _clientFilters = new List<IClientFitrable>();
 
         private NewLikesNotify? _newLikesNotify;
         private ClientViewModel? _currentClient;
@@ -83,29 +86,30 @@
             {
                 _dataManager.GetData<CommandExecutor>().StartListen(this);
                 await SendStartMessage(update);
+                _isInitFindClients = false;
                 _currentClient = null;
                 InitFindClients(update);
                 await SendNextApplication(update);
             }
         }
 
-        private void InitFindClients(Update update, ClientViewModel? excludeClientViewModel = null, bool forceInit = false)
+        private void InitFindClients(Update update, ClientViewModel? excludeClientViewModel = null)
         {
-            if (_findClients == null || !_findClients.Any() || forceInit)
+            if (_findClients == null || !_findClients.Any() || !_isInitFindClients)
             {
                 _findClients = _dataManager.GetData<ICustomerManager>().GetClients(excludeClientViewModel);
                 CollectClientFilter(update);
-                _findClients = _findClients.Filter(_clientFiters).ToList();
+                _findClients = _findClients.Filter(_clientFilters).ToList();
+                _isInitFindClients = true;
             }
-
         }
 
         private void CollectClientFilter(Update update)
         {
-            if (_clientFiters == null || !_clientFiters.Any())
+            if (_clientFilters == null || !_clientFilters.Any())
             {
                 _myClient = _dataManager.GetData<ICustomerManager>().GetClientByTelegram(Get.GetUserId(update).ToString());
-                _clientFiters = _dataManager.GetData<ICustomerManager>().GetFindClientFilters(_myClient);
+                _clientFilters = _dataManager.GetData<ICustomerManager>().GetFindClientFilters(_myClient);
             }
         }
 
@@ -360,5 +364,7 @@
                 }
             }
         }
+
+        public async Task SupportExecute(Update update) => _isInitFindClients = false;
     }
 }
