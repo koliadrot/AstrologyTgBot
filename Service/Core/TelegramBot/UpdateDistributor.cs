@@ -62,17 +62,17 @@ namespace Service.Core.TelegramBot
 
         public async Task ExecuteSupportCommands(Update update)
         {
-            long userId = Get.GetUserId(update);
             string messageText = Get.GetText(update);
-            foreach (var listener in _listeners)
+            var validListeners = _listeners.Where(x => x.Value.GetSupportCommandExecutorByName(messageText) != null).Select(x => new
             {
-                var supportCommand = listener.Value.GetSupportCommandExecutorByName(messageText);
-                if (supportCommand != null)
-                {
-                    update.Message.From.Id = userId;
-                    update.Message.Chat.Id = userId;
-                    await supportCommand.SupportExecute(update);
-                }
+                Id = x.Key,
+                Executor = x.Value.GetSupportCommandExecutorByName(messageText)
+            });
+            foreach (var listener in validListeners)
+            {
+                update.Message.From.Id = listener.Id;
+                update.Message.Chat.Id = listener.Id;
+                await listener.Executor.SupportExecute(update);
             }
         }
 
