@@ -107,7 +107,7 @@ namespace Service.Core.TelegramBot
                         WebHookUrl = WebHookUrl.TrimEnd('/');
                     }
                     _client = new TelegramBotClient(Token);
-                    string hook = $"{WebHookUrl}/{GlobalTelegramSettings.BASE_MESSAGE}/{GlobalTelegramSettings.UPDATE_MESSAGE}";
+                    string hook = $"{WebHookUrl}/{GlobalTelegramSettings.BASE}/{GlobalTelegramSettings.UPDATE}";
                     await _client.SetWebhookAsync(hook);
                     var task = await _client.GetWebhookInfoAsync();
 
@@ -221,7 +221,7 @@ namespace Service.Core.TelegramBot
         public async Task ReupdateUser(long userId)
         {
             var httpClient = new HttpClient();
-            string apiUrl = $"{WebHookUrl}/{GlobalTelegramSettings.BASE_MESSAGE}/{GlobalTelegramSettings.RE_UPDATE_MESSAGE}?userId={userId}&password={GlobalTelegramSettings.API_PASSWORD}";
+            string apiUrl = $"{WebHookUrl}/{GlobalTelegramSettings.BASE}/{GlobalTelegramSettings.REUPDATE}?userId={userId}&password={GlobalTelegramSettings.API_PASSWORD}";
             HttpResponseMessage response = await httpClient.GetAsync(apiUrl);
         }
 

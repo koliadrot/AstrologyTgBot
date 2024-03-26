@@ -156,8 +156,7 @@
                                 SupportsInlineQueries = false,
                             };
                             string requestJson = JsonConvert.SerializeObject(update);
-                            string typeMessage = MessageModel.AdditionalParams.TryGetValue(ICommunication.TYPE_MESSAGE_KEY, out string newTypeMessage) ? newTypeMessage : GlobalTelegramSettings.SEND_MESSAGE;
-                            string fullUrl = $"{baseUrl}/{GlobalTelegramSettings.BASE_MESSAGE}/{typeMessage}?password={HttpUtility.UrlEncode(GlobalTelegramSettings.API_PASSWORD)}";
+                            string fullUrl = $"{baseUrl}/{GlobalTelegramSettings.BASE}/{GlobalTelegramSettings.SEND}?password={HttpUtility.UrlEncode(GlobalTelegramSettings.API_PASSWORD)}";
                             var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
                             HttpResponseMessage response = await client.PostAsync(fullUrl, content);
                             if (response.IsSuccessStatusCode)

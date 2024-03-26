@@ -60,8 +60,9 @@ namespace Service.Core.TelegramBot
             return executor.GetNotifyByName(messageText) != null;
         }
 
-        public async Task ExecuteSupportCommands(Update update)
+        public async Task<Message> ExecuteSupportCommands(Update update)
         {
+            Message message = update.Message;
             string messageText = Get.GetText(update);
             var validListeners = _listeners.Where(x => x.Value.GetSupportCommandExecutorByName(messageText) != null).Select(x => new
             {
@@ -74,6 +75,8 @@ namespace Service.Core.TelegramBot
                 update.Message.Chat.Id = listener.Id;
                 await listener.Executor.SupportExecute(update);
             }
+            message.Text = "Ok";
+            return message;
         }
 
         public async Task<bool> HasSupportCommands(Update update)

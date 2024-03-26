@@ -2,9 +2,7 @@
 {
     using Quartz;
     using Service.Abstract;
-    using Service.Abstract.Communication;
     using Service.Abstract.TaskPlanner;
-    using Service.Core.TelegramBot;
     using Service.Core.TelegramBot.Notifies;
     using Service.ViewModels.Communication;
     using System.Threading.Tasks;
@@ -62,19 +60,11 @@
         public async Task Execute(IJobExecutionContext context)
         {
             var clients = _customerManager.GetClients();
-            SendCommunicationInfo sendCommunicationInfo = new SendCommunicationInfo()
-            {
-                Message = nameof(NewLikesNotify),
-                AdditionalParams = new Dictionary<string, string>()
-                {
-                    {ICommunication.TYPE_MESSAGE_KEY,GlobalTelegramSettings.NEW_LIKES_NOTIFY }
-                }
-            };
             foreach (var client in clients)
             {
                 if (_customerManager.NewLikesCountByClientMatchInfo(client.ClientMatchInfo, false) > 0)
                 {
-                    await _communicationManager.GetCurrentCommunication().SendMessage(client, sendCommunicationInfo, string.Empty, string.Empty);
+                    await _communicationManager.GetCurrentCommunication().SendMessage(client, new SendCommunicationInfo() { Message = nameof(NewLikesNotify) }, string.Empty, string.Empty);
                 }
             }
         }

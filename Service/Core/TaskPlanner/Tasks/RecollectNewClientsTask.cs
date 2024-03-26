@@ -2,9 +2,7 @@
 {
     using Quartz;
     using Service.Abstract;
-    using Service.Abstract.Communication;
     using Service.Abstract.TaskPlanner;
-    using Service.Core.TelegramBot;
     using Service.Core.TelegramBot.Commands;
     using Service.ViewModels.Communication;
     using System.Threading.Tasks;
@@ -64,15 +62,7 @@
         {
             //NOTE:тут клиент не так важен, просто требуется модель клиента
             var client = _customerManager.GetClients().FirstOrDefault();
-            SendCommunicationInfo sendCommunicationInfo = new SendCommunicationInfo()
-            {
-                Message = nameof(FindApplicationCommand),
-                AdditionalParams = new Dictionary<string, string>()
-                {
-                    {ICommunication.TYPE_MESSAGE_KEY,GlobalTelegramSettings.RECOLLECT_FIND_CLIENTS }
-                }
-            };
-            await _communicationManager.GetCurrentCommunication().SendMessage(client, sendCommunicationInfo, string.Empty, string.Empty);
+            await _communicationManager.GetCurrentCommunication().SendMessage(client, new SendCommunicationInfo() { Message = nameof(FindApplicationCommand) }, string.Empty, string.Empty);
         }
     }
 }

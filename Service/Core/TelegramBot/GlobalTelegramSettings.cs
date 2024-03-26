@@ -10,13 +10,10 @@
         #endregion
 
         #region Routes
-        public const string BASE_MESSAGE = "api/message";
-        public const string UPDATE_MESSAGE = "update";
-        public const string RE_UPDATE_MESSAGE = "reupdate";
-        public const string SEND_MESSAGE = "send";
-        public const string OFFER_SHOW_FIND_CLIENTS_NOTIFY = "offershowfindclientsnotify";
-        public const string NEW_LIKES_NOTIFY = "newlikesnotify";
-        public const string RECOLLECT_FIND_CLIENTS = "recollectfindclients";
+        public const string BASE = "api/message";
+        public const string UPDATE = "update";
+        public const string REUPDATE = "reupdate";
+        public const string SEND = "send";
         #endregion
     }
 }

@@ -9,8 +9,6 @@
     /// </summary>
     public interface ICommunication
     {
-        public const string TYPE_MESSAGE_KEY = "typeMessageKey";
-
         ReceiveCommunicationInfo SendMessage(string From, string To, string Message, string Login = "", string Password = "");
         Task<ReceiveCommunicationInfo> SendMessage(ClientViewModel To, SendCommunicationInfo MessageModel, string Login, string Password, string From = "");
         Task<string> GetBalance(string login, string password);

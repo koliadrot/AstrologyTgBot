@@ -2,10 +2,8 @@
 {
     using Quartz;
     using Service.Abstract;
-    using Service.Abstract.Communication;
     using Service.Abstract.Filtrable;
     using Service.Abstract.TaskPlanner;
-    using Service.Core.TelegramBot;
     using Service.Core.TelegramBot.Notifies;
     using Service.Extensions;
     using Service.ViewModels.Communication;
@@ -62,14 +60,6 @@
         public async Task Execute(IJobExecutionContext context)
         {
             var clients = _customerManager.GetClients();
-            SendCommunicationInfo sendCommunicationInfo = new SendCommunicationInfo()
-            {
-                Message = nameof(OfferShowFindClientsNotify),
-                AdditionalParams = new Dictionary<string, string>()
-                {
-                    {ICommunication.TYPE_MESSAGE_KEY,GlobalTelegramSettings.OFFER_SHOW_FIND_CLIENTS_NOTIFY }
-                }
-            };
             foreach (var client in clients)
             {
                 var myClient = client;
@@ -79,7 +69,7 @@
 
                 if (findClients.Any())
                 {
-                    await _communicationManager.GetCurrentCommunication().SendMessage(client, sendCommunicationInfo, string.Empty, string.Empty);
+                    await _communicationManager.GetCurrentCommunication().SendMessage(client, new SendCommunicationInfo() { Message = nameof(OfferShowFindClientsNotify) }, string.Empty, string.Empty);
                 }
             }
         }
